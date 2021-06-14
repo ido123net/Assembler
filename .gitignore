@@ -1,0 +1,6 @@
+.vscode
+*.o
+*.exe
+test.as
+assembler
+linked_list.*
