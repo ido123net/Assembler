@@ -1,11 +1,14 @@
 #ifndef BINARY_H
 #define BINARY_H
 
-typedef struct binary *Binary;
+#define IMMED_MASK 0xffff
+#define ADDRESS_MASK 0xffffff
 
-struct binary
+enum
 {
-    int num;
+    ONE_BYTE = 1,
+    TWO_BYTES = 2,
+    FOUR_BYTES = 4
 };
 
 enum
@@ -20,5 +23,9 @@ enum
     IMMED = 0,
     ADDRESS = 0
 };
+
+void setBinary(int *bin, int field, int update_value);
+
+void immedConvert(int *immed);
 
 #endif

@@ -1,6 +1,7 @@
 .vscode
 *.o
 *.exe
+*.txt
 test.as
 assembler
 linked_list.*

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h> /* // TODO delete this at the end */
+#include <stdlib.h> /* TODO delete this at the end */
 #include "binary.h"
 
 long decimalToBinary(int n)
@@ -17,45 +17,27 @@ long decimalToBinary(int n)
     return binary;
 }
 
-void setBinary(Binary *bin, int field, int update_value)
+void setBinary(int *bin, int field, int update_value)
 {
-    (*bin)->num |= update_value << field;
+    *bin |= update_value << field;
 }
 
+void immedConvert(int *immed)
+{
+    *immed &= IMMED_MASK;
+}
 
-/**
- * ! for debuging
- * TODO delete this at the end
- */
-void binPrint(Binary bin)
+/* TODO delete this at the end */
+void fbinPrint(int bin, FILE **fo)
 {
     int i;
     for (i = 31; i >= 0; i--)
     {
         int k = (1 << i);
-        if (bin->num & k)
-            putchar('1');
+        if (bin & k)
+            putc('1', *fo);
         else
-            putchar('0');
+            putc('0', *fo);
     }
-    putchar('\n');
+    putc('\n', *fo);
 }
-
-
-/**
- * ! Driver program to test above function
- * TODO delete this at the end
- */
-/* int main()
-{
-    binary bin = malloc(sizeof(binary));
-    setBinary(&bin, OPCODE, 0);
-    setBinary(&bin, RS, 3);
-    setBinary(&bin, RT, 5);
-    setBinary(&bin, RD, 9);
-    setBinary(&bin, FUNCT, 1);
-    binPrint(bin);
-    printf("00000000011001010100100001000000");
-
-    return 0;
-} */
