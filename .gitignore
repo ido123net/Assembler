@@ -2,6 +2,9 @@
 *.o
 *.exe
 *.txt
-test.as
+*.as
+*.ob
+*.ent
+*.ext
 assembler
 linked_list.*
