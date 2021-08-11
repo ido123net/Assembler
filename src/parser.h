@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "util.h"
 #include "data_structure.h"
+#include "error.h"
 
 #define ARITHMETIC_BOUND 5
 #define I_OFFSET 10

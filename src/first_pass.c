@@ -3,12 +3,13 @@
 
 int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image code_image, SymbolTable symbol_table, int *ICF, int *DCF)
 {
+    int *err = &errno;
     FILE *file;
     char line[MAX_LINE_LENGTH], tmp[MAX_LINE_LENGTH];
     char label[MAX_SYMBOL_LENGTH], symbol[MAX_SYMBOL_LENGTH];
     char instructions;
     int labelflag, errorsflag = FALSE;
-    int opcode, funct, rs, rt, rd, immed, reg, address; /* // *convert to struct */
+    int opcode, funct, rs, rt, rd, immed, reg, address; /* TODO: convert to struct */
     int data_type;
     int IC = START_ADDRESS;
     int DC = 0;
@@ -18,8 +19,11 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
 
     char *devided_line[NO_OF_ELEMENTS];
 
-    if ((file = fopen(filename, "r")) == NULL) /* TODO: error handle */
-        return -1;
+    if ((file = fopen(filename, "r")) == NULL)
+    {
+        fprintf(stderr, "Error opening file: %s\n", strerror(errno));
+        return FALSE;
+    }
 
     while (read_line(line, MAX_LINE_LENGTH + 1, file) != NULL)
     {
@@ -32,7 +36,7 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
         labelflag = FALSE;
         opcode = funct = rs = rt = rd = immed = reg = address = binary.four_bytes = 0;
 
-        printf("%s", line); /* //! */
+        /* TODO delete line: printf("%s", line); */
 
         if (blank_line(devided_line[arg]) || comment_line(devided_line[arg])) /* if line is blank or comment, ignore it */
             continue;
@@ -48,9 +52,9 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
             if (labelflag)
             {
                 get_label(label, devided_line[FIRST_ARG]);
-                if (!valid_symbol(label))
+                if (errno = valid_symbol(label))
                 {
-                    /* TODO: raise error */
+                    symbol_error(row_num, label, errno);
                     continue;
                 }
                 add_symbol_to_symbol_table(label, symbol_table, DC, DATA);
@@ -78,25 +82,24 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
             /* TODO: warning if labelflag */
             devided_line[++arg] = strtok(NULL, "\0");
             get_symbol(symbol, devided_line[arg]);
-            if (is_symbol(symbol) && valid_symbol(symbol))
+            if (!(errno = is_symbol(symbol)) && !(errno = valid_symbol(symbol)))
                 add_symbol_to_symbol_table(symbol, symbol_table, 0, EXTERNAL);
             else
-                /* TODO: raise error */
-                continue;
+                symbol_error(row_num, symbol, errno);
             continue;
         }
 
         if (labelflag)
         {
             get_label(label, devided_line[FIRST_ARG]);
-            if (!valid_symbol(label))
+            if (errno = valid_symbol(label))
             {
-                /* TODO: raise error */
+                symbol_error(row_num, label, errno);
                 continue;
             }
             add_symbol_to_symbol_table(label, symbol_table, IC, CODE);
         }
-        
+
         if (!(instructions = get_instructions(devided_line[arg], &opcode, &funct)))
         {
             /* TODO: raise an error. */

@@ -11,6 +11,7 @@
 #include <errno.h>
 #include "data_structure.h"
 #include "binary.h"
+#include "error.h"
 
 #define ARITHMETIC_BOUND 5
 #define IMMED_MAX 0x7fff

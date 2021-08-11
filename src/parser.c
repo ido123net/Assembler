@@ -159,12 +159,12 @@ int comment_line(char *tok)
 int is_symbol(char *s)
 {
     if (!s || strlen(s) == 0)
-        return FALSE;
+        return -1;
     if (isalpha(*s))
         s++;
-    while (isalpha(*s) || isdigit(*s))
+    while (isalnum(*s))
         s++;
-    return !(*s);
+    return (*s)? INVALID_SYMBOL : 0;
 }
 
 int is_label(char *s)
@@ -175,7 +175,7 @@ int is_label(char *s)
         return FALSE;
     strncpy(label, s, len - 1);
     label[len - 1] = '\0';
-    return is_symbol(label);
+    return is_symbol(label) == 0;
 }
 
 char *get_symbol(char *symbol, char *s)
@@ -223,18 +223,21 @@ int valid_symbol(char *symbol)
 
     for (i = 0; i < LENGTH(R_type_instructions); i++)
         if (strcmp(R_type_instructions[i], symbol) == 0)
-            return FALSE;
+            return SAVED_WORD;
     for (i = 0; i < LENGTH(I_type_instructions); i++)
         if (strcmp(I_type_instructions[i], symbol) == 0)
-            return FALSE;
+            return SAVED_WORD;
     for (i = 0; i < LENGTH(J_type_instructions); i++)
         if (strcmp(J_type_instructions[i], symbol) == 0)
-            return FALSE;
+            return SAVED_WORD;
     for (i = 0; i < LENGTH(data_types); i++)
         if (strcmp(data_types[i], symbol) == 0)
-            return FALSE;
+            return SAVED_WORD;
 
-    return TRUE;
+    if (strlen(symbol) >= MAX_SYMBOL_LENGTH)
+        return SYMBOL_TOO_LONG;
+
+    return 0;
 }
 
 char get_instructions(char *s, int *opcode, int *funct)
