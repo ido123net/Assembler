@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "util.h"
 #include "data_structure.h"
+#include "error.h"
 
 #define ARITHMETIC_BOUND 5
 #define I_OFFSET 10
@@ -79,7 +80,7 @@ int is_data(char *s);
 /* Checks if the symbol is a reserved word */
 int valid_symbol(char *symbol);
 
-char get_instructions(char *s, int *opcode, int *funct);
+char get_directive(char *s, int *opcode, int *funct);
 
 int get_data_type(char *tok);
 

@@ -2,9 +2,9 @@
 debug ?= true
 
 ifeq ($(debug), true)
-CFLAGS := -g -Wall -ansi -pedantic
+CFLAGS := -m32 -g -Wall -ansi -pedantic
 else
-CFLAGS := -Wall -ansi -pedantic
+CFLAGS := -m32 -Wall -ansi -pedantic
 endif
 
 OBJFLAGS := $(CFLAGS) -c
