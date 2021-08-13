@@ -37,18 +37,6 @@ typedef union code_binary
 
 } Binary;
 
-typedef struct operands
-{
-    unsigned int opcode : 6;
-    unsigned int funct : 5;
-    unsigned int rs : 5;
-    unsigned int rt : 5;
-    unsigned int rd : 5;
-    unsigned int immed : 16;
-    unsigned int reg : 1;
-    unsigned int address : 25;
-} Operands;
-
 enum
 {
     ONE_BYTE = 1,

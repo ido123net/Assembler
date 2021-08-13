@@ -8,8 +8,6 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
     char line[MAX_LINE_LENGTH], tmp[MAX_LINE_LENGTH];
     char label[MAX_SYMBOL_LENGTH], symbol[MAX_SYMBOL_LENGTH];
     int labelflag, errorsflag = FALSE;
-    /* int opcode, funct, rs, rt, rd, immed, reg, address; */ /* TODO: convert to struct */
-    /* Operands operands; */
     int data_type;
     int IC = START_ADDRESS;
     int DC = 0;
@@ -34,7 +32,6 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
         devided_line[arg] = strtok(tmp, SPACES);
 
         labelflag = FALSE;
-        /* //! memset(&operands, 0, sizeof(Operands)); */
         binary = malloc(sizeof(Binary));
 
         /* TODO delete line: */
