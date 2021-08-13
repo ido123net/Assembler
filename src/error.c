@@ -17,7 +17,7 @@ void directive_error(size_t row, char *directive, int error)
 
 void label_warning(size_t row)
 {
-    fprintf(stderr, "WARNING: (Line %d) Label declared on entry/extern lines\n", row);
+    fprintf(stderr, "WARNING: (Line %d) Label declared on entry/extern line\n", row);
 }
 
 char *symbolstrerror(int error)

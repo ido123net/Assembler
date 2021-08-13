@@ -15,6 +15,10 @@ enum symbol_errors
 enum directive_errors
 {
     INVALID_DIRECTIVE = 1,
+    NOT_REG,
+    NAN, /* not a number */
+    INVALID_IMMED,
+    INVALID_LABEL,
     EXTRANEOUS_OPERAND,
     MISSING_OPERAND
 };

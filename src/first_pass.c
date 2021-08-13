@@ -7,14 +7,14 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
     FILE *file;
     char line[MAX_LINE_LENGTH], tmp[MAX_LINE_LENGTH];
     char label[MAX_SYMBOL_LENGTH], symbol[MAX_SYMBOL_LENGTH];
-    char instructions;
     int labelflag, errorsflag = FALSE;
-    int opcode, funct, rs, rt, rd, immed, reg, address; /* TODO: convert to struct */
+    /* int opcode, funct, rs, rt, rd, immed, reg, address; */ /* TODO: convert to struct */
+    /* Operands operands; */
     int data_type;
     int IC = START_ADDRESS;
     int DC = 0;
     size_t row_num = 0;
-    Binary binary;
+    Binary *binary;
     int arg;
 
     char *devided_line[NO_OF_ELEMENTS];
@@ -34,10 +34,11 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
         devided_line[arg] = strtok(tmp, SPACES);
 
         labelflag = FALSE;
-        opcode = funct = rs = rt = rd = immed = reg = address = binary.four_bytes = 0;
+        /* //! memset(&operands, 0, sizeof(Operands)); */
+        binary = malloc(sizeof(Binary));
 
         /* TODO delete line: */
-        /* printf("%s", line); */
+        printf("%s", line);
 
         if (blank_line(devided_line[arg]) || comment_line(devided_line[arg])) /* if line is blank or comment, ignore it */
             continue;
@@ -67,14 +68,18 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
             {
                 errorsflag = TRUE;
             }
-            getdata(row_num, devided_line[arg], data_type, data_image, &DC, line); /* // ? remove line? */
+            if (!getdata(row_num, devided_line[arg], data_type, data_image, &DC, line))
+            {
+                fprintf(stderr, "Error malloc file: %s\n", strerror(errno));
+                return FALSE;
+            }
             continue;
         }
 
         if (entry_line(devided_line[arg]))
         {
             if (!addImageLine(initImageLine(row_num, NULL, line, binary, 0), code_image))
-                errorsflag = TRUE;
+                return FALSE;
             continue;
         }
 
@@ -103,18 +108,9 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
             add_symbol_to_symbol_table(label, symbol_table, IC, CODE);
         }
 
-        if (!(instructions = get_instructions(devided_line[arg], &opcode, &funct)))
-        {
-            /* TODO: raise an error. */
-            return -1;
-        }
         devided_line[++arg] = strtok(NULL, "\0");
-        /* TODO: analyze operands */
-        /**
-         * Analyze the structure of the operands according to the type of instruction.
-         * If an error is detected, raise an error.
-         */
-        if (analyzeoperands(devided_line[arg], opcode, funct, &rs, &rt, &rd, &immed, &reg, &address))
+        
+        if (analyzeoperands(devided_line[(arg -1)], devided_line[arg], binary) == 0)
         {
             /* TODO: Build a binary encoding for the instruction */
             /**
@@ -122,33 +118,9 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
              * Add the encoding to the memory image of The instructions.
              * Add the current value of the IC as the memory address of the instruction Added.
              */
-            switch (instructions)
-            {
-            case 'R':
-                binary.Rbinary.opcode = opcode;
-                binary.Rbinary.rs = rs;
-                binary.Rbinary.rt = rt;
-                binary.Rbinary.rd = rd;
-                binary.Rbinary.funct = funct;
-                break;
-
-            case 'I':
-                binary.Ibinary.opcode = opcode;
-                binary.Ibinary.rs = rs;
-                binary.Ibinary.rt = rt;
-                immedConvert(&immed);
-                binary.Ibinary.immed = immed;
-                break;
-
-            case 'J':
-                binary.Jbinary.opcode = opcode;
-                binary.Jbinary.reg = reg;
-                binary.Jbinary.address = address;
-                break;
-            }
             /* TODO: add binary to instruction image */
             if (!addImageLine(initImageLine(row_num, &IC, line, binary, FOUR_BYTES), code_image))
-                errorsflag = TRUE;
+                return FALSE;
         }
     }
 

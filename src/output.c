@@ -26,10 +26,10 @@ int output_object(char filename[MAX_LINE_LENGTH], Image code_image, Image data_i
         if (line->address > 0)
         {
             fprintf(fp, "%.4d ", line->address);
-            fprintf(fp, "%.2X ", line->binary.four_bytes >> (8 * 0) & 0xFF);
-            fprintf(fp, "%.2X ", line->binary.four_bytes >> (8 * 1) & 0xFF);
-            fprintf(fp, "%.2X ", line->binary.four_bytes >> (8 * 2) & 0xFF);
-            fprintf(fp, "%.2X\n", line->binary.four_bytes >> (8 * 3) & 0xFF);
+            fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * 0) & 0xFF);
+            fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * 1) & 0xFF);
+            fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * 2) & 0xFF);
+            fprintf(fp, "%.2X\n", line->binary->four_bytes >> (8 * 3) & 0xFF);
         }
 
         line = line->nextLine;
@@ -113,5 +113,5 @@ int output_externals(char filename[MAX_LINE_LENGTH], ExternalLines external_line
 
 void print_next_data_bin(FILE *fp, ImageLine line, int *i)
 {
-    fprintf(fp, "%.2X ", line->binary.four_bytes >> (8 * (*i)++) & 0xFF);
+    fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * (*i)++) & 0xFF);
 }
