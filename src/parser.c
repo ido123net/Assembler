@@ -102,7 +102,7 @@ int str_to_immed(char *tok)
 char *str_to_symbol(char *tok)
 {
     tok = str_strip(tok);
-    if (!is_symbol(tok))
+    if (is_symbol(tok) != 0)
         return NULL;
     return tok;
 }

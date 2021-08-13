@@ -77,12 +77,12 @@ int output_entries(char filename[MAX_LINE_LENGTH], SymbolTable symbol_table)
             if (!fp)
                 if ((fp = fopen(strcat(ent_filename, ".ent"), "w")) == NULL)
                     return FALSE;
-            fprintf(fp, "%s %d\n", line->symbol, line->value);
+            fprintf(fp, "%s %.4d\n", line->symbol, line->value);
         }
         line = line->nextLine;
     }
-
-    fclose(fp);
+    if (fp)
+        fclose(fp);
     return TRUE;
 }
 
@@ -94,7 +94,6 @@ int output_externals(char filename[MAX_LINE_LENGTH], ExternalLines external_line
 
     strcpy(ext_filename, filename);
 
-
     if (line)
     {
         if ((fp = fopen(strcat(ext_filename, ".ext"), "w")) == NULL)
@@ -103,12 +102,12 @@ int output_externals(char filename[MAX_LINE_LENGTH], ExternalLines external_line
 
     while (line)
     {
-        fprintf(fp, "%s %d\n", line->symbol, line->val);
-        
+        fprintf(fp, "%s %.4d\n", line->symbol, line->val);
+
         line = line->next_line;
     }
-    
-    fclose(fp);
+    if (fp)
+        fclose(fp);
     return TRUE;
 }
 

@@ -88,7 +88,7 @@ int valid_data(char *tok, int type);
 
 int getdata(size_t row, char *s, int data_type, Image data_image, int *DC, char *text);
 
-int analyzeoperands(char *s, int opcode, int funct, int IC, int *rs, int *rt, int *rd, int *immed, int *reg, int *address);
+int analyzeoperands(char *s, int opcode, int funct, int *rs, int *rt, int *rd, int *immed, int *reg, int *address);
 
 char **devide_line(char line[MAX_LINE_LENGTH], char *devided_line[NO_OF_ELEMENTS], const char *delim);
 

@@ -36,7 +36,8 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
         labelflag = FALSE;
         opcode = funct = rs = rt = rd = immed = reg = address = binary.four_bytes = 0;
 
-        /* TODO delete line: printf("%s", line); */
+        /* TODO delete line: */
+        /* printf("%s", line); */
 
         if (blank_line(devided_line[arg]) || comment_line(devided_line[arg])) /* if line is blank or comment, ignore it */
             continue;
@@ -79,7 +80,9 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
 
         if (extern_line(devided_line[arg]))
         {
-            /* TODO: warning if labelflag */
+            if (labelflag)
+                label_warning(row_num);
+            
             devided_line[++arg] = strtok(NULL, "\0");
             get_symbol(symbol, devided_line[arg]);
             if (!(errno = is_symbol(symbol)) && !(errno = valid_symbol(symbol)))
@@ -111,7 +114,7 @@ int first_pass(const char filename[MAX_LINE_LENGTH], Image data_image, Image cod
          * Analyze the structure of the operands according to the type of instruction.
          * If an error is detected, raise an error.
          */
-        if (analyzeoperands(devided_line[arg], opcode, funct, IC, &rs, &rt, &rd, &immed, &reg, &address))
+        if (analyzeoperands(devided_line[arg], opcode, funct, &rs, &rt, &rd, &immed, &reg, &address))
         {
             /* TODO: Build a binary encoding for the instruction */
             /**

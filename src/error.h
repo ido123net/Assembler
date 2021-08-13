@@ -23,6 +23,12 @@ void line_error(size_t row, int error);
 
 void symbol_error(size_t row, char *symbol, int error);
 
+void label_warning(size_t row);
+
 char *symbolstrerror(int error);
+
+void directive_error(size_t row, char *directive, int error);
+
+char *directivestrerror(int error);
 
 #endif
