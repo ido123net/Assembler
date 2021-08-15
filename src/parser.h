@@ -53,7 +53,7 @@ enum
 
 int str_to_reg(char *tok);
 
-int str_to_immed(char *tok);
+int valid_immed(int immed);
 
 char *str_to_symbol(char *tok);
 
@@ -80,7 +80,7 @@ int is_data(char *s);
 /* Checks if the symbol is a reserved word */
 int valid_symbol(char *symbol);
 
-char get_directive(char *s, int *opcode, int *funct);
+int get_directive_type(char *s, Binary *bin);
 
 int get_data_type(char *tok);
 
@@ -88,7 +88,7 @@ int valid_data(char *tok, int type);
 
 int getdata(size_t row, char *s, int data_type, Image data_image, int *DC, char *text);
 
-int analyzeoperands(char *s, int opcode, int funct, int IC, int *rs, int *rt, int *rd, int *immed, int *reg, int *address);
+int analyzeoperands(char *directive, char *operands, Binary *bin);
 
 char **devide_line(char line[MAX_LINE_LENGTH], char *devided_line[NO_OF_ELEMENTS], const char *delim);
 

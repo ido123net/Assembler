@@ -34,7 +34,7 @@ int second_pass(Image code_image, SymbolTable symbol_table, ExternalLines extern
             continue;
         }
 
-        switch (line->binary.Rbinary.opcode)
+        switch (line->binary->Rbinary.opcode)
         {
         case BEQ:
         case BNE:
@@ -51,7 +51,7 @@ int second_pass(Image code_image, SymbolTable symbol_table, ExternalLines extern
                 break;
             }
 
-            line->binary.Ibinary.immed = symbol_table_line->value - line->address;
+            line->binary->Ibinary.immed = symbol_table_line->value - line->address;
             break;
 
         case JMP:
@@ -71,7 +71,7 @@ int second_pass(Image code_image, SymbolTable symbol_table, ExternalLines extern
                 addExternalLine(externLine, external_lines);
             }
 
-            line->binary.Jbinary.address = symbol_table_line->value;
+            line->binary->Jbinary.address = symbol_table_line->value;
             break;
 
         default:

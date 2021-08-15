@@ -50,7 +50,7 @@ ExternalLines initExternalLines()
     return externalLines;
 }
 
-ImageLine initImageLine(size_t row, int *address, const char code[MAX_LINE_LENGTH], Binary bin, int type)
+ImageLine initImageLine(size_t row, int *address, const char code[MAX_LINE_LENGTH], Binary *bin, int type)
 {
     ImageLine _image_line;
     _image_line = malloc(sizeof(struct image_line));
