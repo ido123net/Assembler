@@ -73,6 +73,20 @@ static char *registers[] = {
     "$30",
     "$31"};
 
+static int isnumber(char *s)
+{
+    if (!s)
+        return FALSE;
+
+    if (*s == '-' || *s == '+')
+        s++;
+
+    for (; isdigit(*s); s++)
+        ;
+
+    return (*s == '\0');
+}
+
 int str_to_reg(char *tok)
 {
     int i;
@@ -85,24 +99,15 @@ int str_to_reg(char *tok)
     return -1;
 }
 
-int str_to_immed(char *tok)
+int valid_immed(int immed)
 {
-    char *p;
-    tok = str_strip(tok);
-    p = tok;
-    if (*tok == '-' || *tok == '+')
-        tok++;
-    for (; isdigit(*tok); tok++)
-        ;
-    if (*tok)
-        return IMMED_MAX + 1;
-    return atoi(p);
+    return (immed <= (+IMMED_MAX) && immed >= (-IMMED_MIN));
 }
 
 char *str_to_symbol(char *tok)
 {
     tok = str_strip(tok);
-    if (!is_symbol(tok))
+    if (is_symbol(tok) != 0)
         return NULL;
     return tok;
 }
@@ -164,7 +169,7 @@ int is_symbol(char *s)
         s++;
     while (isalnum(*s))
         s++;
-    return (*s)? INVALID_SYMBOL : 0;
+    return (*s) ? INVALID_SYMBOL : 0;
 }
 
 int is_label(char *s)
@@ -182,7 +187,7 @@ char *get_symbol(char *symbol, char *s)
 {
     if (!s)
         return NULL;
-    
+
     s = str_strip(s);
     strcpy(symbol, s);
     return symbol;
@@ -240,7 +245,11 @@ int valid_symbol(char *symbol)
     return 0;
 }
 
+<<<<<<< HEAD
 char get_directive(char *s, int *opcode, int *funct)
+=======
+int get_directive_type(char *s, Binary *binary)
+>>>>>>> error-handle
 {
     int i;
     s = str_strip(s);
@@ -248,17 +257,17 @@ char get_directive(char *s, int *opcode, int *funct)
     {
         if (strcmp(R_type_instructions[i], s) == 0)
         {
-            *opcode = i / ARITHMETIC_BOUND;
-            *funct = (i % ARITHMETIC_BOUND) + 1;
-            return 'R';
+            binary->Rbinary.opcode = i / ARITHMETIC_BOUND;
+            binary->Rbinary.funct = (i % ARITHMETIC_BOUND) + 1;
+            return binary->Rbinary.opcode;
         }
     }
     for (i = 0; i < LENGTH(I_type_instructions); i++)
     {
         if (strcmp(I_type_instructions[i], s) == 0)
         {
-            *opcode = i + I_OFFSET;
-            return 'I';
+            binary->Ibinary.opcode = i + I_OFFSET;
+            return binary->Ibinary.opcode;
         }
     }
     for (i = 0; i < LENGTH(J_type_instructions); i++)
@@ -266,13 +275,13 @@ char get_directive(char *s, int *opcode, int *funct)
         if (strcmp(J_type_instructions[i], s) == 0)
         {
             if (i < 3)
-                *opcode = i + J_OFFSET;
+                binary->Jbinary.opcode = i + J_OFFSET;
             else
-                *opcode = i + (J_OFFSET * 2);
-            return 'J';
+                binary->Jbinary.opcode = i + (J_OFFSET * 2);
+            return binary->Jbinary.opcode;
         }
     }
-    return '\0';
+    return -1;
 }
 
 int get_data_type(char *tok)
@@ -346,7 +355,7 @@ int valid_data(char *s, int data_type)
 int getdata(size_t row, char *s, int data_type, Image data_image, int *DC, char *text)
 {
     char *tok, *tmp;
-    Binary bin;
+    Binary *binary;
 
     if (data_type == ASCIZ)
     {
@@ -354,14 +363,20 @@ int getdata(size_t row, char *s, int data_type, Image data_image, int *DC, char 
         s++;
         while (*s != '"')
         {
-            bin.one_byte = *s;
-            if (!addImageLine(initImageLine(row, DC, text, bin, ONE_BYTE), data_image))
+            binary = malloc(sizeof(Binary));
+            if (!binary)
+                return FALSE;
+            binary->one_byte = *s;
+            if (!addImageLine(initImageLine(row, DC, text, binary, ONE_BYTE), data_image))
                 return FALSE;
             text = "";
             s++;
         }
-        bin.one_byte = '\0';
-        if (!addImageLine(initImageLine(row, DC, text, bin, ONE_BYTE), data_image))
+        binary = malloc(sizeof(Binary));
+        if (!binary)
+            return FALSE;
+        binary->one_byte = '\0';
+        if (!addImageLine(initImageLine(row, DC, text, binary, ONE_BYTE), data_image))
             return FALSE;
         return TRUE;
     }
@@ -369,26 +384,38 @@ int getdata(size_t row, char *s, int data_type, Image data_image, int *DC, char 
     tok = strtok(tmp, ",");
     while (tok)
     {
+        binary = malloc(sizeof(Binary));
+        if (!binary)
+            return FALSE;
         switch (data_type)
         {
         case DB:
-            bin.one_byte = (unsigned char)atoi(tok);
-            if (!addImageLine(initImageLine(row, DC, text, bin, ONE_BYTE), data_image))
+            binary->one_byte = (unsigned char)atoi(tok);
+            if (!addImageLine(initImageLine(row, DC, text, binary, ONE_BYTE), data_image))
+            {
+                free(binary);
                 return FALSE;
+            }
             text = "";
             break;
 
         case DH:
-            bin.two_bytes = (signed short)atoi(tok);
-            if (!addImageLine(initImageLine(row, DC, text, bin, TWO_BYTES), data_image))
+            binary->two_bytes = (signed short)atoi(tok);
+            if (!addImageLine(initImageLine(row, DC, text, binary, TWO_BYTES), data_image))
+            {
+                free(binary);
                 return FALSE;
+            }
             text = "";
             break;
 
         case DW:
-            bin.four_bytes = atoi(tok);
-            if (!addImageLine(initImageLine(row, DC, text, bin, FOUR_BYTES), data_image))
+            binary->four_bytes = atoi(tok);
+            if (!addImageLine(initImageLine(row, DC, text, binary, FOUR_BYTES), data_image))
+            {
+                free(binary);
                 return FALSE;
+            }
             text = "";
             break;
         }
@@ -397,42 +424,48 @@ int getdata(size_t row, char *s, int data_type, Image data_image, int *DC, char 
     return TRUE;
 }
 
-int analyzeoperands(char *s, int opcode, int funct, int IC, int *rs, int *rt, int *rd, int *immed, int *reg, int *address)
+int analyzeoperands(char *directive, char *operands, Binary *binary)
 {
     int _reg, _immed;
     char *label;
     char *tok;
-    switch (opcode)
+
+    int type;
+
+    if ((type = get_directive_type(directive, binary)) == -1)
+        return INVALID_DIRECTIVE;
+
+    switch (type)
     {
-    case ADD:
-        tok = strtok(s, ",");
+    case ADD: /* work as well for SUB, AND, OR and NOR */
+        tok = strtok(operands, ",");
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rs = _reg;
+            binary->Rbinary.rs = _reg;
         else
-            return FALSE;
+            return NOT_REG;
         tok = strtok(NULL, ",");
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rt = _reg;
+            binary->Rbinary.rt = _reg;
         else
-            return FALSE;
-        tok = strtok(NULL, "\0");
+            return NOT_REG;
+        tok = strtok(NULL, SPACES);
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rd = _reg;
+            binary->Rbinary.rd = _reg;
         else
-            return FALSE;
+            return NOT_REG;
         break;
 
-    case MOVE:
-        tok = strtok(s, ",");
+    case MOVE: /* work as well for MVHI, and MVLO */
+        tok = strtok(operands, ",");
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rs = _reg;
+            binary->Rbinary.rs = _reg;
         else
-            return FALSE;
-        tok = strtok(NULL, "\0");
+            return NOT_REG;
+        tok = strtok(NULL, SPACES);
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rd = _reg;
+            binary->Rbinary.rd = _reg;
         else
-            return FALSE;
+            return NOT_REG;
         break;
 
     case ADDI:
@@ -440,41 +473,43 @@ int analyzeoperands(char *s, int opcode, int funct, int IC, int *rs, int *rt, in
     case ANDI:
     case ORI:
     case NORI:
-        tok = strtok(s, ",");
+        tok = strtok(operands, ",");
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rs = _reg;
+            binary->Ibinary.rs = _reg;
         else
-            return FALSE;
+            return NOT_REG;
         tok = strtok(NULL, ",");
-        _immed = str_to_immed(tok);
-        if (_immed <= (+IMMED_MAX) && _immed >= (-IMMED_MIN))
-            *immed = _immed;
+        if (!isnumber(tok))
+            return NAN;
+        _immed = atoi(tok);
+        if (valid_immed(_immed))
+            binary->Ibinary.immed = _immed;
         else
-            return FALSE;
-        tok = strtok(NULL, "\0");
+            return INVALID_IMMED;
+        tok = strtok(NULL, SPACES);
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rt = _reg;
+            binary->Ibinary.rt = _reg;
         else
-            return FALSE;
+            return NOT_REG;
         break;
 
     case BEQ:
     case BNE:
     case BLT:
     case BGT:
-        tok = strtok(s, ",");
+        tok = strtok(operands, ",");
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rs = _reg;
+            binary->Ibinary.rs = _reg;
         else
-            return FALSE;
+            return NOT_REG;
         tok = strtok(NULL, ",");
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rt = _reg;
+            binary->Ibinary.rt = _reg;
         else
-            return FALSE;
-        tok = strtok(NULL, "\0");
+            return NOT_REG;
+        tok = strtok(NULL, SPACES);
         if ((label = str_to_symbol(tok)) == NULL)
-            return FALSE;
+            return INVALID_LABEL;
         break;
 
     case LB:
@@ -483,60 +518,64 @@ int analyzeoperands(char *s, int opcode, int funct, int IC, int *rs, int *rt, in
     case SW:
     case LH:
     case SH:
-        tok = strtok(s, ",");
+        tok = strtok(operands, ",");
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rs = _reg;
+            binary->Ibinary.rs = _reg;
         else
-            return FALSE;
+            return NOT_REG;
         tok = strtok(NULL, ",");
-        _immed = str_to_immed(tok);
-        if (_immed <= (+IMMED_MAX) && _immed >= (-IMMED_MIN))
-            *immed = _immed;
+        if (!isnumber(tok))
+            return NAN;
+        _immed = atoi(tok);
+        if (valid_immed(_immed))
+            binary->Ibinary.immed = _immed;
         else
-            return FALSE;
-        tok = strtok(NULL, "\0");
+            return INVALID_IMMED;
+        tok = strtok(NULL, SPACES);
         if ((_reg = str_to_reg(tok)) >= 0)
-            *rt = _reg;
+            binary->Ibinary.rt = _reg;
         else
-            return FALSE;
+            return NOT_REG;
         break;
 
     case JMP:
-        tok = strtok(s, "\0");
+        tok = strtok(operands, SPACES);
         tok = str_strip(tok);
         switch (*tok)
         {
         case '$':
-            *reg = TRUE;
+            binary->Jbinary.reg = TRUE;
             if ((_reg = str_to_reg(tok)) >= 0)
-                *address = _reg;
+                binary->Jbinary.address = _reg;
+            else
+                return NOT_REG;
             break;
 
         default:
-            *reg = FALSE;
+            binary->Jbinary.reg = FALSE;
             if ((label = str_to_symbol(tok)) == NULL)
-                return FALSE;
+                return INVALID_LABEL;
             break;
         }
         break;
 
     case LA:
     case CALL:
-        tok = strtok(s, "\0");
+        tok = strtok(operands, SPACES);
         tok = str_strip(tok);
         if ((label = str_to_symbol(tok)) == NULL)
-            return FALSE;
+            return INVALID_LABEL;
         break;
 
     case STOP:
-        if (s)
-            return FALSE;
-        break;
-
-    default:
+        if (operands)
+            return EXTRANEOUS_OPERAND;
         break;
     }
-    return TRUE;
+    if (strtok(NULL, SPACES) != NULL)
+        return EXTRANEOUS_OPERAND;
+
+    return 0;
 }
 
 char **devide_line(char line[MAX_LINE_LENGTH], char *devided_line[NO_OF_ELEMENTS], const char *delim)

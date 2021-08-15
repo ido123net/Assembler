@@ -33,7 +33,7 @@ struct image_line
     size_t row;
     int address;
     char code[MAX_LINE_LENGTH];
-    Binary binary;
+    Binary *binary;
     ImageLine nextLine;
     ImageLine prevLine;
 };
@@ -69,7 +69,7 @@ int addAttr(SymbolTableLine line, char attr);
 
 ExternalLine initExternalLine(char symbol[MAX_SYMBOL_LENGTH], int val);
 
-ImageLine initImageLine(size_t row, int *address, const char code[MAX_LINE_LENGTH], Binary bin, int type);
+ImageLine initImageLine(size_t row, int *address, const char code[MAX_LINE_LENGTH], Binary *bin, int type);
 
 SymbolTableLine initSymbolTableLine(const char symbol[MAX_SYMBOL_LENGTH], int value, char attr);
 

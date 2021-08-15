@@ -26,10 +26,10 @@ int output_object(char filename[MAX_LINE_LENGTH], Image code_image, Image data_i
         if (line->address > 0)
         {
             fprintf(fp, "%.4d ", line->address);
-            fprintf(fp, "%.2X ", line->binary.four_bytes >> (8 * 0) & 0xFF);
-            fprintf(fp, "%.2X ", line->binary.four_bytes >> (8 * 1) & 0xFF);
-            fprintf(fp, "%.2X ", line->binary.four_bytes >> (8 * 2) & 0xFF);
-            fprintf(fp, "%.2X\n", line->binary.four_bytes >> (8 * 3) & 0xFF);
+            fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * 0) & 0xFF);
+            fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * 1) & 0xFF);
+            fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * 2) & 0xFF);
+            fprintf(fp, "%.2X\n", line->binary->four_bytes >> (8 * 3) & 0xFF);
         }
 
         line = line->nextLine;
@@ -77,12 +77,12 @@ int output_entries(char filename[MAX_LINE_LENGTH], SymbolTable symbol_table)
             if (!fp)
                 if ((fp = fopen(strcat(ent_filename, ".ent"), "w")) == NULL)
                     return FALSE;
-            fprintf(fp, "%s %d\n", line->symbol, line->value);
+            fprintf(fp, "%s %.4d\n", line->symbol, line->value);
         }
         line = line->nextLine;
     }
-
-    fclose(fp);
+    if (fp)
+        fclose(fp);
     return TRUE;
 }
 
@@ -94,7 +94,6 @@ int output_externals(char filename[MAX_LINE_LENGTH], ExternalLines external_line
 
     strcpy(ext_filename, filename);
 
-
     if (line)
     {
         if ((fp = fopen(strcat(ext_filename, ".ext"), "w")) == NULL)
@@ -103,16 +102,16 @@ int output_externals(char filename[MAX_LINE_LENGTH], ExternalLines external_line
 
     while (line)
     {
-        fprintf(fp, "%s %d\n", line->symbol, line->val);
-        
+        fprintf(fp, "%s %.4d\n", line->symbol, line->val);
+
         line = line->next_line;
     }
-    
-    fclose(fp);
+    if (fp)
+        fclose(fp);
     return TRUE;
 }
 
 void print_next_data_bin(FILE *fp, ImageLine line, int *i)
 {
-    fprintf(fp, "%.2X ", line->binary.four_bytes >> (8 * (*i)++) & 0xFF);
+    fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * (*i)++) & 0xFF);
 }
