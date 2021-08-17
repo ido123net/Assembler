@@ -21,8 +21,9 @@ int output_object(char filename[MAX_LINE_LENGTH],
     char ob_filename[MAX_LINE_LENGTH];
     FILE *fp = NULL;
     Node node = code_image->head;
-    ImageLine line;
-    int i = 0, j = 0;
+    CodeLine code_line;
+    DataLine data_line;
+    int i;
 
     strcpy(ob_filename, filename);
 
@@ -31,14 +32,15 @@ int output_object(char filename[MAX_LINE_LENGTH],
     fprintf(fp, "\t %d %d\n", (ICF - START_ADDRESS), (DCF));
     while (node)
     {
-        line = node->data;
-        if (line->address > 0)
+        code_line = node->data;
+        if (code_line->address > 0)
         {
-            fprintf(fp, "%.4d ", line->address);
-            fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * 0) & 0xFF);
-            fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * 1) & 0xFF);
-            fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * 2) & 0xFF);
-            fprintf(fp, "%.2X\n", line->binary->four_bytes >> (8 * 3) & 0xFF);
+            fprintf(fp, "%.4d", code_line->address);
+            for (i = 0; (i < 4); i++)
+            {
+                fprintf(fp, " %.2X", code_line->binary->value >> (8 * i) & 0xFF);
+            }
+            putc('\n', fp);
         }
 
         node = node->next;
@@ -48,21 +50,13 @@ int output_object(char filename[MAX_LINE_LENGTH],
 
     while (node)
     {
-        line = node->data;
-        if (!(j % 4))
-            fprintf(fp, "%.4d ", line->address);
-
-        print_next_data_bin(fp, line, &i);
-
-        if (i >= line->size)
+        data_line = node->data;
+        fprintf(fp, "%.4d", data_line->address);
+        for (i = 0; node && (i < 4); i++, node = node->next)
         {
-            node = node->next;
-            i = 0;
+            fprintf(fp, " %.2X", data_line->value);
         }
-
-        j++;
-        if (!(j % 4))
-            fputc('\n', fp);
+        putc('\n', fp);
     }
 
     fclose(fp);
@@ -120,9 +114,4 @@ int output_externals(char filename[MAX_LINE_LENGTH], LinkedList external_lines)
     if (fp)
         fclose(fp);
     return TRUE;
-}
-
-void print_next_data_bin(FILE *fp, ImageLine line, int *i)
-{
-    fprintf(fp, "%.2X ", line->binary->four_bytes >> (8 * (*i)++) & 0xFF);
 }

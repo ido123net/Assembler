@@ -35,23 +35,30 @@ ExternalLine initExternalLine(char symbol[MAX_SYMBOL_LENGTH], int val)
     return external_line;
 }
 
-ImageLine initImageLine(size_t row, int *address, const char code[MAX_LINE_LENGTH], Binary *bin, int type)
+CodeLine initCodeLine(size_t row, int address, char code[MAX_LINE_LENGTH], Binary *bin, int type)
 {
-    ImageLine image_line;
-    image_line = malloc(sizeof(struct image_line));
-    if (image_line)
+    CodeLine code_line;
+    code_line = malloc(sizeof(struct code_line));
+    if (code_line)
     {
-        image_line->row = row;
-        strcpy(image_line->code, code);
-        if (address)
-        {
-            image_line->address = *address;
-            image_line->binary = bin;
-            *address += type;
-        }
-        image_line->size = type;
+        code_line->row = row;
+        strcpy(code_line->code, code);
+        code_line->address = address;
+        code_line->binary = bin;
     }
-    return image_line;
+    return code_line;
+}
+
+DataLine initDataLine(int address, unsigned char value)
+{
+    DataLine data_line;
+    data_line = malloc(sizeof(struct data_line));
+    if (data_line)
+    {
+        data_line->address = address;
+        data_line->value = value;
+    }
+    return data_line;
 }
 
 SymbolTableLine initSymbolTableLine(const char symbol[MAX_SYMBOL_LENGTH], int value, int attr)
@@ -123,7 +130,7 @@ void updateSymbolTable(int ICF, LinkedList symbol_table)
 
 void updateDataImage(int ICF, LinkedList data_image)
 {
-    ImageLine line;
+    CodeLine line;
     Node node = data_image->head;
     while (node)
     {
@@ -144,4 +151,16 @@ int add_symbol_to_symbol_table(char *symbol, LinkedList symbol_table, int value,
         return FALSE;
     }
     return add_last(symbol_table, initSymbolTableLine(symbol, value, attr));
+}
+
+int add_data(LinkedList data_image, int *address, int value, int type)
+{
+    int i;
+    for (i = 0; i < type; i++)
+    {
+        if(!add_last(data_image, initDataLine(*address, (value >> (8 * i++) & 0xFF))))
+            return FALSE;
+        (*address)++;
+    }
+    return TRUE;
 }

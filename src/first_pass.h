@@ -32,7 +32,6 @@ int getdata(size_t row,
             char *s,
             int data_type,
             LinkedList data_image,
-            int *DC,
-            char *text);
+            int *DC);
 
 #endif

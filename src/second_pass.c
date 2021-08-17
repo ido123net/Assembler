@@ -9,7 +9,7 @@ int second_pass(LinkedList code_image,
     char *devided_line[NO_OF_ELEMENTS];
     char tmp[MAX_LINE_LENGTH];
     Node node;
-    ImageLine line;
+    CodeLine line;
     SymbolTableLine symbol_table_line;
     char symbol[MAX_SYMBOL_LENGTH];
     int errorsflag = FALSE;

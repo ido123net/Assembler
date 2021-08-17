@@ -10,7 +10,7 @@ typedef union code_binary
 {
     unsigned char one_byte;
     unsigned short two_bytes;
-    unsigned int four_bytes;
+    unsigned int value;
 
     struct
     {

@@ -13,14 +13,21 @@ typedef struct external_line
     int val;
 } * ExternalLine;
 
-typedef struct image_line
+typedef struct code_line
 {
     int size;
     size_t row;
     int address;
     char code[MAX_LINE_LENGTH];
     Binary *binary;
-} * ImageLine;
+} * CodeLine;
+
+typedef struct data_line
+{
+    size_t row;
+    int address;
+    unsigned char value;
+} * DataLine;
 
 typedef struct symbol_table_line
 {
@@ -39,7 +46,9 @@ int addAttr(SymbolTableLine line, int attr);
 
 ExternalLine initExternalLine(char symbol[MAX_SYMBOL_LENGTH], int val);
 
-ImageLine initImageLine(size_t row, int *address, const char code[MAX_LINE_LENGTH], Binary *bin, int type);
+CodeLine initCodeLine(size_t row, int address, char code[MAX_LINE_LENGTH], Binary *bin, int type);
+
+DataLine initDataLine(int address, unsigned char value);
 
 SymbolTableLine initSymbolTableLine(const char symbol[MAX_SYMBOL_LENGTH], int value, int attr);
 
@@ -52,5 +61,7 @@ void updateSymbolTable(int ICF, LinkedList symbol_table);
 void updateDataImage(int ICF, LinkedList data_image);
 
 int add_symbol_to_symbol_table(char *symbol, LinkedList symbol_table, int value, char attr);
+
+int add_data(LinkedList data_image, int *address, int value, int type);
 
 #endif

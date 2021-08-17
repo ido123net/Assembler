@@ -22,6 +22,6 @@ int output_entries(char filename[MAX_LINE_LENGTH], LinkedList symbol_table);
 
 int output_externals(char filename[MAX_LINE_LENGTH], LinkedList external_lines);
 
-void print_next_data_bin(FILE *fp, ImageLine line, int *i);
+void print_next_data_bin(FILE *fp, CodeLine line, int *i);
 
 #endif

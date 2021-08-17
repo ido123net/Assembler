@@ -39,9 +39,6 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
         labelflag = FALSE;
         binary = init_Binary();
 
-        /* TODO delete line: */
-        /* printf("%s", line); */
-
         if (blank_line(devided_line[arg]) || comment_line(devided_line[arg])) /* if line is blank or comment, ignore it */
             continue;
 
@@ -71,7 +68,7 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
                 /* TODO: error */
                 continue;
             }
-            if (!getdata(row_num, devided_line[arg], data_type, data_image, &DC, line))
+            if (!getdata(row_num, devided_line[arg], data_type, data_image, &DC))
             {
                 fprintf(stderr, "Error malloc file: %s\n", strerror(errno));
                 return FALSE;
@@ -81,7 +78,7 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
 
         if (entry_line(devided_line[arg]))
         {
-            if (!add_last(code_image, initImageLine(row_num, NULL, line, binary, 0)))
+            if (!add_last(code_image, initCodeLine(row_num, 0, line, binary, 0)))
                 return FALSE;
             continue;
         }
@@ -129,8 +126,10 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
              * Add the current value of the IC as the memory address of the instruction Added.
              */
             /* TODO: add binary to instruction image */
-            if (!add_last(code_image, initImageLine(row_num, &IC, line, binary, FOUR_BYTES)))
+            if (!add_last(code_image, initCodeLine(row_num, IC, line, binary, FOUR_BYTES)))
                 return FALSE;
+
+            IC += 4;
         }
     }
 
@@ -146,10 +145,10 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
     return TRUE;
 }
 
-int getdata(size_t row, char *s, int data_type, LinkedList data_image, int *DC, char *text)
+int getdata(size_t row, char *s, int data_type, LinkedList data_image, int *DC)
 {
     char *tok, tmp[MAX_LINE_LENGTH];
-    Binary *binary;
+    int value;
 
     if (data_type == ASCIZ)
     {
@@ -157,62 +156,23 @@ int getdata(size_t row, char *s, int data_type, LinkedList data_image, int *DC, 
         s++;
         while (*s != '"')
         {
-            binary = malloc(sizeof(Binary));
-            if (!binary)
+            if (!add_last(data_image, initDataLine(*DC, *s)))
                 return FALSE;
-            binary->one_byte = *s;
-            if (!add_last(data_image, initImageLine(row, DC, text, binary, ONE_BYTE)))
-                return FALSE;
-            text = "";
             s++;
         }
-        binary = malloc(sizeof(Binary));
-        if (!binary)
+        if (!add_last(data_image, initDataLine(*DC, '\0')))
             return FALSE;
-        binary->one_byte = '\0';
-        if (!add_last(data_image, initImageLine(row, DC, text, binary, ONE_BYTE)))
-            return FALSE;
+        *DC += 4;
         return TRUE;
     }
+
     strcpy(tmp, s);
     tok = strtok(tmp, ",");
+
     while (tok)
     {
-        binary = malloc(sizeof(Binary));
-        if (!binary)
-            return FALSE;
-        switch (data_type)
-        {
-        case DB:
-            binary->one_byte = (unsigned char)atoi(tok);
-            if (!add_last(data_image, initImageLine(row, DC, text, binary, ONE_BYTE)))
-            {
-                free(binary);
-                return FALSE;
-            }
-            text = "";
-            break;
-
-        case DH:
-            binary->two_bytes = (signed short)atoi(tok);
-            if (!add_last(data_image, initImageLine(row, DC, text, binary, TWO_BYTES)))
-            {
-                free(binary);
-                return FALSE;
-            }
-            text = "";
-            break;
-
-        case DW:
-            binary->four_bytes = atoi(tok);
-            if (!add_last(data_image, initImageLine(row, DC, text, binary, FOUR_BYTES)))
-            {
-                free(binary);
-                return FALSE;
-            }
-            text = "";
-            break;
-        }
+        value = atoi(tok);
+        add_data(data_image, DC, value, data_type);
         tok = strtok(NULL, ",");
     }
     return TRUE;
