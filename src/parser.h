@@ -86,8 +86,6 @@ int get_data_type(char *tok);
 
 int valid_data(char *tok, int type);
 
-int getdata(size_t row, char *s, int data_type, Image data_image, int *DC, char *text);
-
 int analyzeoperands(char *directive, char *operands, Binary *bin);
 
 char **devide_line(char line[MAX_LINE_LENGTH], char *devided_line[NO_OF_ELEMENTS], const char *delim);

@@ -1,10 +1,14 @@
 #include "second_pass.h"
 #include "parser.h"
 
-int second_pass(Image code_image, SymbolTable symbol_table, ExternalLines external_lines, int *ICF, int *DCF)
+int second_pass(LinkedList code_image,
+                LinkedList symbol_table,
+                LinkedList external_lines,
+                int *ICF, int *DCF)
 {
     char *devided_line[NO_OF_ELEMENTS];
     char tmp[MAX_LINE_LENGTH];
+    Node node;
     ImageLine line;
     SymbolTableLine symbol_table_line;
     char symbol[MAX_SYMBOL_LENGTH];
@@ -12,10 +16,11 @@ int second_pass(Image code_image, SymbolTable symbol_table, ExternalLines extern
     ExternalLine externLine;
     int arg;
 
-    line = code_image->head;
+    node = code_image->head;
 
-    while (line)
+    while (node)
     {
+        line = node->data;
         arg = 0;
         strcpy(tmp, line->code);
 
@@ -30,7 +35,7 @@ int second_pass(Image code_image, SymbolTable symbol_table, ExternalLines extern
         {
             get_symbol(symbol, devided_line[(arg + 1)]);
             addAttr(get_symbol_line(symbol_table, symbol), ENTRY);
-            line = line->nextLine;
+            node = node->next;
             continue;
         }
 
@@ -45,9 +50,9 @@ int second_pass(Image code_image, SymbolTable symbol_table, ExternalLines extern
             strtok(NULL, ",");
             get_symbol(symbol, strtok(NULL, "\0"));
             symbol_table_line = get_symbol_line(symbol_table, symbol);
-            if (symbol_table_line->attributes & EXTERNAL)
+            if (symbol_table_line->attributes.external == TRUE)
             {
-                errorsflag = TRUE;
+                /* TODO: error */
                 break;
             }
 
@@ -61,14 +66,14 @@ int second_pass(Image code_image, SymbolTable symbol_table, ExternalLines extern
             if (str_to_reg(symbol) >= 0)
                 break;
             symbol_table_line = get_symbol_line(symbol_table, symbol);
-            if ((symbol_table_line->attributes & EXTERNAL))
+            if ((symbol_table_line->attributes.external == TRUE))
             {
                 if (!(externLine = initExternalLine(symbol, line->address)))
                 {
-                    errorsflag = TRUE;
+                    /* TODO: error */
                     break;
                 }
-                addExternalLine(externLine, external_lines);
+                add_last(external_lines, externLine);
             }
 
             line->binary->Jbinary.address = symbol_table_line->value;
@@ -78,7 +83,7 @@ int second_pass(Image code_image, SymbolTable symbol_table, ExternalLines extern
             break;
         }
 
-        line = line->nextLine;
+        node = node->next;
     }
 
     if (errorsflag)

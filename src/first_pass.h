@@ -21,6 +21,18 @@
 #define I_OFFSET 10
 #define J_OFFSET 30
 
-int first_pass(const char *filename, Image data_image, Image code_image, SymbolTable symbol_table, int *ICF, int *DCF);
+int first_pass(const char filename[MAX_LINE_LENGTH],
+               LinkedList data_image,
+               LinkedList code_image,
+               LinkedList symbol_table,
+               int *ICF,
+               int *DCF);
+
+int getdata(size_t row,
+            char *s,
+            int data_type,
+            LinkedList data_image,
+            int *DC,
+            char *text);
 
 #endif

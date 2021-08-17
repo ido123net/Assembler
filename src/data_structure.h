@@ -5,94 +5,52 @@
 #include <string.h>
 #include "binary.h"
 #include "util.h"
+#include "linked_list.h"
 
-typedef struct external_line *ExternalLine;
-
-struct external_line
+typedef struct external_line
 {
     char symbol[MAX_SYMBOL_LENGTH];
     int val;
-    ExternalLine next_line;
-    ExternalLine prev_line;
-};
+} * ExternalLine;
 
-typedef struct external_lines *ExternalLines;
-
-struct external_lines
-{
-    ExternalLine head;
-    ExternalLine tail;
-};
-
-
-typedef struct image_line *ImageLine;
-
-struct image_line
+typedef struct image_line
 {
     int size;
     size_t row;
     int address;
     char code[MAX_LINE_LENGTH];
     Binary *binary;
-    ImageLine nextLine;
-    ImageLine prevLine;
-};
+} * ImageLine;
 
-typedef struct image *Image;
-
-struct image
-{
-    ImageLine head;
-    ImageLine tail;
-};
-
-typedef struct symbol_table_line *SymbolTableLine;
-
-struct symbol_table_line
+typedef struct symbol_table_line
 {
     char symbol[MAX_SYMBOL_LENGTH];
     int value;
-    char attributes;
-    SymbolTableLine nextLine;
-    SymbolTableLine prevLine;
-};
+    struct attributes
+    {
+        unsigned int code : 1;
+        unsigned int data : 1;
+        unsigned int entry : 1;
+        unsigned int external : 1; 
+    } attributes;
+} * SymbolTableLine;
 
-typedef struct symbol_table *SymbolTable;
-
-struct symbol_table
-{
-    SymbolTableLine head;
-    SymbolTableLine tail;
-};
-
-int addAttr(SymbolTableLine line, char attr);
+int addAttr(SymbolTableLine line, int attr);
 
 ExternalLine initExternalLine(char symbol[MAX_SYMBOL_LENGTH], int val);
 
 ImageLine initImageLine(size_t row, int *address, const char code[MAX_LINE_LENGTH], Binary *bin, int type);
 
-SymbolTableLine initSymbolTableLine(const char symbol[MAX_SYMBOL_LENGTH], int value, char attr);
+SymbolTableLine initSymbolTableLine(const char symbol[MAX_SYMBOL_LENGTH], int value, int attr);
 
-Image initImage();
+SymbolTableLine get_symbol_line(LinkedList symbol_table, char *symbol);
 
-SymbolTable initSymbolTable();
+int find_attr(SymbolTableLine line, int attr);
 
-SymbolTableLine get_symbol_line(SymbolTable _symbol_table, char *_symbol);
+void updateSymbolTable(int ICF, LinkedList symbol_table);
 
-int addImageLine(ImageLine line, Image _image);
+void updateDataImage(int ICF, LinkedList data_image);
 
-int addSymbolTableLine(SymbolTableLine line, SymbolTable _symbol_table);
-
-int find_attr(SymbolTableLine line, char attr);
-
-void updateSymbolTable(int ICF, SymbolTable symbol_table);
-
-void updateDataImage(int ICF, Image data_image);
-
-int add_symbol_to_symbol_table(char *symbol, SymbolTable symbol_table, int value, char attr);
-
-ExternalLines initExternalLines();
-
-int addExternalLine(ExternalLine line, ExternalLines external_lines);
+int add_symbol_to_symbol_table(char *symbol, LinkedList symbol_table, int value, char attr);
 
 #endif

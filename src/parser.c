@@ -348,78 +348,6 @@ int valid_data(char *s, int data_type)
     return TRUE;
 }
 
-int getdata(size_t row, char *s, int data_type, Image data_image, int *DC, char *text)
-{
-    char *tok, *tmp;
-    Binary *binary;
-
-    if (data_type == ASCIZ)
-    {
-        s = str_strip(s);
-        s++;
-        while (*s != '"')
-        {
-            binary = malloc(sizeof(Binary));
-            if (!binary)
-                return FALSE;
-            binary->one_byte = *s;
-            if (!addImageLine(initImageLine(row, DC, text, binary, ONE_BYTE), data_image))
-                return FALSE;
-            text = "";
-            s++;
-        }
-        binary = malloc(sizeof(Binary));
-        if (!binary)
-            return FALSE;
-        binary->one_byte = '\0';
-        if (!addImageLine(initImageLine(row, DC, text, binary, ONE_BYTE), data_image))
-            return FALSE;
-        return TRUE;
-    }
-    tmp = my_strdup(s);
-    tok = strtok(tmp, ",");
-    while (tok)
-    {
-        binary = malloc(sizeof(Binary));
-        if (!binary)
-            return FALSE;
-        switch (data_type)
-        {
-        case DB:
-            binary->one_byte = (unsigned char)atoi(tok);
-            if (!addImageLine(initImageLine(row, DC, text, binary, ONE_BYTE), data_image))
-            {
-                free(binary);
-                return FALSE;
-            }
-            text = "";
-            break;
-
-        case DH:
-            binary->two_bytes = (signed short)atoi(tok);
-            if (!addImageLine(initImageLine(row, DC, text, binary, TWO_BYTES), data_image))
-            {
-                free(binary);
-                return FALSE;
-            }
-            text = "";
-            break;
-
-        case DW:
-            binary->four_bytes = atoi(tok);
-            if (!addImageLine(initImageLine(row, DC, text, binary, FOUR_BYTES), data_image))
-            {
-                free(binary);
-                return FALSE;
-            }
-            text = "";
-            break;
-        }
-        tok = strtok(NULL, ",");
-    }
-    return TRUE;
-}
-
 int analyzeoperands(char *directive, char *operands, Binary *binary)
 {
     int _reg, _immed;
@@ -599,9 +527,7 @@ char *read_line(char *s, int n, FILE *stream)
     if (!s || (len = strlen(s)) == 0)
         return s;
     /* TODO: Warning line too long */
-    if (s[len - 1] != '\0')
-        return s;
-    if (s[len - 1] != '\n')
+    if (s[len - 1] != '\n' && s[len - 1] != '\0')
     {
         c = getc(stream);
         while (c != '\n' && c != '\0')

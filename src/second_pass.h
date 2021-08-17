@@ -5,6 +5,6 @@
 #include "util.h"
 #include "data_structure.h"
 
-int second_pass(Image code_image, SymbolTable symbol_table, ExternalLines external_lines, int *ICF, int *DCF);
+int second_pass(LinkedList code_image, LinkedList symbol_table, LinkedList external_lines, int *ICF, int *DCF);
 
 #endif

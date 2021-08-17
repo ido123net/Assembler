@@ -23,17 +23,10 @@ enum
 
 enum
 {
-    CODE = 1,
-    DATA = 2,
-    ENTRY = 4,
-    EXTERNAL = 8
-};
-
-enum
-{
-    FIRST_ARG,
-    SECOND_ARG,
-    THIRD_ARG
+    CODE,
+    DATA,
+    ENTRY,
+    EXTERNAL
 };
 
 #endif

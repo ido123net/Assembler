@@ -1,192 +1,139 @@
 #include "data_structure.h"
 
-int addAttr(SymbolTableLine line, char attr)
+int addAttr(SymbolTableLine line, int attr)
 {
-    if (!find_attr(line, attr))
-        return FALSE;    
-    line->attributes |= attr;
+    switch (attr)
+    {
+    case CODE:
+        line->attributes.code = TRUE;
+        break;
+
+    case DATA:
+        line->attributes.data = TRUE;
+        break;
+
+    case ENTRY:
+        line->attributes.entry = TRUE;
+        break;
+
+    case EXTERNAL:
+        line->attributes.external = TRUE;
+        break;
+    }
     return TRUE;
 }
 
 ExternalLine initExternalLine(char symbol[MAX_SYMBOL_LENGTH], int val)
 {
-    ExternalLine _external_line;
-    _external_line = malloc(sizeof(struct external_line));
-    if (_external_line)
+    ExternalLine external_line;
+    external_line = malloc(sizeof(struct external_line));
+    if (external_line)
     {
-        strcpy(_external_line->symbol, symbol);
-        _external_line->val = val;
+        strcpy(external_line->symbol, symbol);
+        external_line->val = val;
     }
-    return _external_line;
-}
-
-int addExternalLine(ExternalLine line, ExternalLines external_lines)
-{
-    if (!line)
-        return FALSE;
-    if (!external_lines->tail)
-    {
-        external_lines->head = line;
-        external_lines->tail = line;
-    }
-    else
-    {
-        external_lines->tail->next_line = line;
-        line->prev_line = external_lines->tail;
-        external_lines->tail = line;
-    }
-    return TRUE;
-}
-
-ExternalLines initExternalLines()
-{
-    ExternalLines externalLines;
-    externalLines = malloc(sizeof(struct external_lines));
-    if (externalLines)
-    {
-        externalLines->head = NULL;
-        externalLines->tail = NULL;
-    }
-    return externalLines;
+    return external_line;
 }
 
 ImageLine initImageLine(size_t row, int *address, const char code[MAX_LINE_LENGTH], Binary *bin, int type)
 {
-    ImageLine _image_line;
-    _image_line = malloc(sizeof(struct image_line));
-    if (_image_line)
+    ImageLine image_line;
+    image_line = malloc(sizeof(struct image_line));
+    if (image_line)
     {
-        _image_line->row = row;
-        strcpy(_image_line->code, code);
+        image_line->row = row;
+        strcpy(image_line->code, code);
         if (address)
         {
-            _image_line->address = *address;
-            _image_line->binary = bin;
+            image_line->address = *address;
+            image_line->binary = bin;
             *address += type;
         }
-        _image_line->size = type;
+        image_line->size = type;
     }
-    return _image_line;
+    return image_line;
 }
 
-SymbolTableLine initSymbolTableLine(const char symbol[MAX_SYMBOL_LENGTH], int value, char attr)
+SymbolTableLine initSymbolTableLine(const char symbol[MAX_SYMBOL_LENGTH], int value, int attr)
 {
-    SymbolTableLine _symbol_table_line;
-    if (!attr)
+    SymbolTableLine symbol_table_line;
+    symbol_table_line = malloc(sizeof(struct symbol_table_line));
+    if (symbol_table_line)
     {
-        return NULL;
+        strcpy(symbol_table_line->symbol, symbol);
+        symbol_table_line->value = value;
+        addAttr(symbol_table_line, attr);
     }
-    _symbol_table_line = malloc(sizeof(struct symbol_table_line));
-    if (_symbol_table_line)
-    {
-        strcpy(_symbol_table_line->symbol, symbol);
-        _symbol_table_line->value = value;
-        _symbol_table_line->attributes = attr;
-    }
-    return _symbol_table_line;
+    return symbol_table_line;
 }
 
-Image initImage()
+SymbolTableLine get_symbol_line(LinkedList symbol_table, char *symbol)
 {
-    Image _image;
-    _image = malloc(sizeof(struct image));
-    if (_image)
+    SymbolTableLine line;
+    Node node = symbol_table->head;
+    while (node)
     {
-        _image->head = NULL;
-        _image->tail = NULL;
-    }
-    return _image;
-}
-
-SymbolTable initSymbolTable()
-{
-    SymbolTable _symbol_table;
-    _symbol_table = malloc(sizeof(struct symbol_table));
-    if (_symbol_table)
-    {
-        _symbol_table->head = NULL;
-        _symbol_table->tail = NULL;
-    }
-    return _symbol_table;
-}
-
-int addImageLine(ImageLine line, Image _image)
-{
-    if (!line)
-        return FALSE;
-    if (!_image->tail)
-    {
-        _image->head = line;
-        _image->tail = line;
-    }
-    else
-    {
-        _image->tail->nextLine = line;
-        line->prevLine = _image->tail;
-        _image->tail = line;
-    }
-    return TRUE;
-}
-
-int addSymbolTableLine(SymbolTableLine line, SymbolTable _symbol_table)
-{
-    if (!line)
-        return FALSE;
-    if (!_symbol_table->tail)
-    {
-        _symbol_table->head = line;
-        _symbol_table->tail = line;
-    }
-    else
-    {
-        _symbol_table->tail->nextLine = line;
-        line->prevLine = _symbol_table->tail;
-        _symbol_table->tail = line;
-    }
-    return TRUE;
-}
-
-SymbolTableLine get_symbol_line(SymbolTable _symbol_table, char *_symbol)
-{
-    SymbolTableLine line = _symbol_table->head;
-    while (line)
-    {
-        if (strcmp(line->symbol, _symbol) == 0)
+        line = node->data;
+        if (strcmp(line->symbol, symbol) == 0)
             return line;
-        line = line->nextLine;
+        node = node->next;
     }
     return NULL;
 }
 
-int find_attr(SymbolTableLine line, char attr)
+int find_attr(SymbolTableLine line, int attr)
 {
-    if (!line)
-        return FALSE;
-    return (((line->attributes) & attr) == 0);
+    int result;
+    switch (attr)
+    {
+    case CODE:
+        result = line->attributes.code;
+        break;
+
+    case DATA:
+        result = line->attributes.data;
+        break;
+
+    case ENTRY:
+        result = line->attributes.entry;
+        break;
+
+    case EXTERNAL:
+        result = line->attributes.external;
+        break;
+
+    default:
+        result = FALSE;
+    }
+    return result;
 }
 
-void updateSymbolTable(int ICF, SymbolTable symbol_table)
+void updateSymbolTable(int ICF, LinkedList symbol_table)
 {
-    SymbolTableLine line = symbol_table->head;
-    while (line)
+    SymbolTableLine line;
+    Node node = symbol_table->head;
+    while (node)
     {
-        if (line->attributes == DATA)
+        line = node->data;
+        if (line->attributes.data == TRUE)
             line->value += ICF;
-        line = line->nextLine;
+        node = node->next;
     }
 }
 
-void updateDataImage(int ICF, Image data_image)
+void updateDataImage(int ICF, LinkedList data_image)
 {
-    ImageLine line = data_image->head;
-    while (line)
+    ImageLine line;
+    Node node = data_image->head;
+    while (node)
     {
+        line = node->data;
         line->address += ICF;
-        line = line->nextLine;
+        node = node->next;
     }
 }
 
-int add_symbol_to_symbol_table(char *symbol, SymbolTable symbol_table, int value, char attr)
+int add_symbol_to_symbol_table(char *symbol, LinkedList symbol_table, int value, char attr)
 {
     SymbolTableLine line;
     if ((line = get_symbol_line(symbol_table, symbol)))
@@ -196,5 +143,5 @@ int add_symbol_to_symbol_table(char *symbol, SymbolTable symbol_table, int value
             return find_attr(line, attr);
         return FALSE;
     }
-    return addSymbolTableLine(initSymbolTableLine(symbol, value, attr), symbol_table);
+    return add_last(symbol_table, initSymbolTableLine(symbol, value, attr));
 }

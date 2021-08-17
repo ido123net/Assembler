@@ -4,6 +4,8 @@
 #define IMMED_MASK 0xffff
 #define ADDRESS_MASK 0xffffff
 
+#include <stdlib.h>
+
 typedef union code_binary
 {
     unsigned char one_byte;
@@ -44,21 +46,6 @@ enum
     FOUR_BYTES = 4
 };
 
-enum
-{
-    OPCODE = 26,
-    REG = 25,
-    RS = 21,
-    RT = 16,
-    RD = 11,
-    FUNCT = 6,
-    UNUSED = 0,
-    IMMED = 0,
-    ADDRESS = 0
-};
-
-void setBinary(int *bin, int field, int update_value);
-
-void immedConvert(int *immed);
+Binary *init_Binary();
 
 #endif

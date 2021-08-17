@@ -3,12 +3,11 @@
 #include "data_structure.h"
 #include "output.h"
 #include "parser.h"
+#include "linked_list.h"
 
 int main(int argc, char const *argv[])
 {
-    Image _data_image, _code_image;
-    SymbolTable _symbol_table;
-    ExternalLines _externalLines;
+    LinkedList data_image, code_image, symbol_table, external_lines;
     char filename[MAX_LINE_LENGTH];
     int ICF, DCF;
     while (--argc > 0)
@@ -22,13 +21,13 @@ int main(int argc, char const *argv[])
         strcpy(filename, *argv);
         strtok(filename, ".");
         ICF = DCF = 0;
-        _data_image = initImage();
-        _code_image = initImage();
-        _symbol_table = initSymbolTable();
-        _externalLines = initExternalLines();
-        if (first_pass(*argv, _data_image, _code_image, _symbol_table, &ICF, &DCF))
-            if (second_pass(_code_image, _symbol_table, _externalLines, &ICF, &DCF))
-                output_files(filename, _code_image, _data_image, _symbol_table, _externalLines, ICF, DCF);
+        data_image = init_list();
+        code_image = init_list();
+        symbol_table = init_list();
+        external_lines = init_list();
+        if (first_pass(*argv, data_image, code_image, symbol_table, &ICF, &DCF))
+            if (second_pass(code_image, symbol_table, external_lines, &ICF, &DCF))
+                output_files(filename, code_image, data_image, symbol_table, external_lines, ICF, DCF);
     }
     
     return 0;
