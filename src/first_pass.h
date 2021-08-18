@@ -33,4 +33,6 @@ void getdata(size_t row,
             LinkedList data_image,
             int *DC);
 
+char *read_line(size_t row, char *s, int n, FILE *stream);
+
 #endif

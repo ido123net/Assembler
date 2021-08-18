@@ -90,8 +90,6 @@ int analyzeoperands(size_t row, char *directive, char *operands, Binary *bin);
 
 char **devide_line(char line[MAX_LINE_LENGTH], char *devided_line[NO_OF_ELEMENTS], const char *delim);
 
-char *read_line(char *s, int n, FILE *stream);
-
 int valid_filename(const char *filename);
 
 #endif

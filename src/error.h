@@ -20,7 +20,10 @@ enum symbol_errors
     INVALID_IMMED,
     INVALID_LABEL,
     EXTRANEOUS_OPERAND,
-    MISSING_OPERAND
+    MISSING_OPERAND,
+    MISSING_SYMBOL,
+    EXTERNAL_SYMBOL,
+    INVALID_DIST
 };
 
 int line_error(size_t row, int error);
@@ -28,6 +31,8 @@ int line_error(size_t row, int error);
 int symbol_error(size_t row, char *symbol, int error);
 
 void label_warning(size_t row);
+
+void long_line_warning(size_t row);
 
 char *symbolstrerror(int error);
 

@@ -26,7 +26,15 @@ Node init_node(void *element)
 
 void add_last(LinkedList linked_list, void *element)
 {
-    Node node = init_node(element);
+    Node node;
+
+    if (!element)
+    {
+        fprintf(stderr, "Error malloc element: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    
+    node = init_node(element);
 
     if (!node)
     {

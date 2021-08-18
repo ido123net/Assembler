@@ -14,7 +14,7 @@ int second_pass(LinkedList code_image,
     char symbol[MAX_SYMBOL_LENGTH];
     int errorsflag = FALSE;
     ExternalLine externLine;
-    int arg;
+    int arg, dist;
 
     node = code_image->head;
 
@@ -34,7 +34,11 @@ int second_pass(LinkedList code_image,
         if (entry_line(devided_line[arg]))
         {
             get_symbol(symbol, devided_line[(arg + 1)]);
-            addAttr(get_symbol_line(symbol_table, symbol), ENTRY);
+            if (!addAttr(get_symbol_line(symbol_table, symbol), ENTRY))
+            {
+                symbol_error(line->row, symbol, MISSING_SYMBOL);
+                errorsflag = TRUE;
+            }
             node = node->next;
             continue;
         }
@@ -45,18 +49,26 @@ int second_pass(LinkedList code_image,
         case BNE:
         case BLT:
         case BGT:
-            /* TODO: check valid distance */
             strtok(devided_line[(arg + 1)], ",");
             strtok(NULL, ",");
             get_symbol(symbol, strtok(NULL, "\0"));
-            symbol_table_line = get_symbol_line(symbol_table, symbol);
-            if (symbol_table_line->attributes.external == TRUE)
+            if (!(symbol_table_line = get_symbol_line(symbol_table, symbol)))
             {
-                /* TODO: error */
-                break;
+                symbol_error(line->row, symbol, MISSING_SYMBOL);
+                errorsflag = TRUE;
             }
-
-            line->binary->Ibinary.immed = symbol_table_line->value - line->address;
+            else if (symbol_table_line->attributes.external == TRUE)
+            {
+                symbol_error(line->row, symbol, EXTERNAL_SYMBOL);
+                errorsflag = TRUE;
+            }
+            else if ((dist = symbol_table_line->value - line->address) > IMMED_MAX)
+            {
+                symbol_error(line->row, symbol, INVALID_DIST);
+                errorsflag = TRUE;
+            }
+            else
+                line->binary->Ibinary.immed = dist;
             break;
 
         case JMP:
@@ -65,29 +77,23 @@ int second_pass(LinkedList code_image,
             get_symbol(symbol, devided_line[(arg + 1)]);
             if (str_to_reg(symbol) >= 0)
                 break;
-            symbol_table_line = get_symbol_line(symbol_table, symbol);
-            if ((symbol_table_line->attributes.external == TRUE))
+            if (!(symbol_table_line = get_symbol_line(symbol_table, symbol)))
             {
-                if (!(externLine = initExternalLine(symbol, line->address)))
-                {
-                    /* TODO: error */
-                    break;
-                }
+                symbol_error(line->row, symbol, MISSING_SYMBOL);
+                errorsflag = TRUE;
+            }
+            else if ((symbol_table_line->attributes.external == TRUE))
+            {
+                externLine = initExternalLine(symbol, line->address);
                 add_last(external_lines, externLine);
             }
-
-            line->binary->Jbinary.address = symbol_table_line->value;
-            break;
-
-        default:
+            else
+                line->binary->Jbinary.address = symbol_table_line->value;
             break;
         }
 
         node = node->next;
     }
 
-    if (errorsflag)
-        return FALSE;
-
-    return TRUE;
+    return !errorsflag;
 }

@@ -29,6 +29,11 @@ void label_warning(size_t row)
     fprintf(stderr, "WARNING: (Line %d) Label declared on entry/extern line\n", row);
 }
 
+void long_line_warning(size_t row)
+{
+    fprintf(stderr, "WARNING: (Line %d) this line is more the %d chars\n", row, MAX_LINE_LENGTH);
+}
+
 char *symbolstrerror(int error)
 {
     switch (error)
@@ -47,6 +52,15 @@ char *symbolstrerror(int error)
 
     case SYBMOL_NOT_EXTERNAL:
         return "already been declared as not external";
+
+    case MISSING_SYMBOL:
+        return "missing from symbol table";
+
+    case EXTERNAL_SYMBOL:
+        return "external symbol";
+
+    case INVALID_DIST:
+        return "invalid distanse";
 
     default:
         return "";

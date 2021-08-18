@@ -10,7 +10,7 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
                int *DCF)
 {
     FILE *file;
-    char line[MAX_LINE_LENGTH], tmp[MAX_LINE_LENGTH];
+    char line[MAX_LINE_LENGTH + 1], tmp[MAX_LINE_LENGTH + 1];
     char label[MAX_SYMBOL_LENGTH], symbol[MAX_SYMBOL_LENGTH];
     int labelflag = FALSE, error_flag = FALSE;
     int data_type;
@@ -28,9 +28,8 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
         return FALSE;
     }
 
-    while (read_line(line, MAX_LINE_LENGTH + 1, file) != NULL)
+    while (read_line(++row, line, MAX_LINE_LENGTH + 1, file) != NULL)
     {
-        row++;
         arg = 0;
         strcpy(tmp, line);
         str_strip(tmp);
@@ -138,14 +137,36 @@ void getdata(size_t row, char *s, int data_type, LinkedList data_image, int *DC)
         }
         add_last(data_image, initDataLine((*DC)++, '\0'));
     }
-
-    strcpy(tmp, s);
-    tok = strtok(tmp, ",");
-
-    while (tok)
+    else
     {
-        value = atoi(tok);
-        add_data(data_image, DC, value, data_type);
-        tok = strtok(NULL, ",");
+        strcpy(tmp, s);
+        tok = strtok(tmp, ",");
+
+        while (tok)
+        {
+            value = atoi(tok);
+            add_data(data_image, DC, value, data_type);
+            tok = strtok(NULL, ",");
+        }
     }
+}
+
+char *read_line(size_t row, char *s, int n, FILE *stream)
+{
+    int len;
+    char c;
+    s = fgets(s, n + 1, stream);
+    if (!s || (len = strlen(s)) == 0)
+        return s;
+    if (len > MAX_LINE_LENGTH)
+        long_line_warning(row);
+    
+    if (s[len - 1] != '\n' && s[len - 1] != '\0')
+    {
+        c = getc(stream);
+        while (c != '\n' && c != '\0')
+            c = getc(stream);
+    }
+    s[len - 1] = '\0';
+    return s;
 }

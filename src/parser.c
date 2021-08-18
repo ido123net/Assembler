@@ -75,6 +75,8 @@ static char *registers[] = {
 
 static int isnumber(char *s)
 {
+    s = str_strip(s);
+
     if (!s)
         return FALSE;
 
@@ -90,6 +92,9 @@ static int isnumber(char *s)
 int str_to_reg(char *tok)
 {
     int i;
+    if (!tok)
+        return -1;
+        
     tok = str_strip(tok);
     for (i = 0; i < LENGTH(registers); i++)
     {
@@ -107,7 +112,7 @@ int valid_immed(int immed)
 char *str_to_symbol(char *tok)
 {
     tok = str_strip(tok);
-    if (is_symbol(tok) != 0)
+    if (!is_symbol(tok))
         return NULL;
     return tok;
 }
@@ -329,6 +334,7 @@ int valid_data(size_t row, char *s, int data_type)
     {
         if (!valid_str(s))
             return data_error(row, s, INVALID_STR);
+        return TRUE;
     }
 
     strcpy(str_num, s);
@@ -531,29 +537,11 @@ char **devide_line(char line[MAX_LINE_LENGTH], char *devided_line[NO_OF_ELEMENTS
     return devided_line;
 }
 
-char *read_line(char *s, int n, FILE *stream)
-{
-    int len;
-    char c;
-    s = fgets(s, n + 1, stream);
-    if (!s || (len = strlen(s)) == 0)
-        return s;
-    /* TODO: Warning line too long */
-    if (s[len - 1] != '\n' && s[len - 1] != '\0')
-    {
-        c = getc(stream);
-        while (c != '\n' && c != '\0')
-            c = getc(stream);
-    }
-    s[len - 1] = '\n';
-    return s;
-}
-
 int valid_filename(const char *filename)
 {
     if (strlen(filename) > MAX_LINE_LENGTH)
         return FALSE;
-    for (; isalpha(*filename); filename++)
+    for (; isalnum(*filename); filename++)
         ;
     return (strcmp(filename, ".as") == 0);
 }

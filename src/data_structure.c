@@ -2,6 +2,9 @@
 
 int addAttr(SymbolTableLine line, int attr)
 {
+    if (!line)
+        return FALSE;
+
     switch (attr)
     {
     case CODE:
