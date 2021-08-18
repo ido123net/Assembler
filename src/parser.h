@@ -78,15 +78,15 @@ char *get_label(char *label, char *s);
 int is_data(char *s);
 
 /* Checks if the symbol is a reserved word */
-int valid_symbol(char *symbol);
+int valid_symbol(size_t row, char *symbol);
 
 int get_directive_type(char *s, Binary *bin);
 
 int get_data_type(char *tok);
 
-int valid_data(char *tok, int type);
+int valid_data(size_t row, char *tok, int type);
 
-int analyzeoperands(char *directive, char *operands, Binary *bin);
+int analyzeoperands(size_t row, char *directive, char *operands, Binary *bin);
 
 char **devide_line(char line[MAX_LINE_LENGTH], char *devided_line[NO_OF_ELEMENTS], const char *delim);
 

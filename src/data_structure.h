@@ -6,6 +6,7 @@
 #include "binary.h"
 #include "util.h"
 #include "linked_list.h"
+#include "error.h"
 
 typedef struct external_line
 {
@@ -15,7 +16,6 @@ typedef struct external_line
 
 typedef struct code_line
 {
-    int size;
     size_t row;
     int address;
     char code[MAX_LINE_LENGTH];
@@ -24,7 +24,6 @@ typedef struct code_line
 
 typedef struct data_line
 {
-    size_t row;
     int address;
     unsigned char value;
 } * DataLine;
@@ -46,7 +45,7 @@ int addAttr(SymbolTableLine line, int attr);
 
 ExternalLine initExternalLine(char symbol[MAX_SYMBOL_LENGTH], int val);
 
-CodeLine initCodeLine(size_t row, int address, char code[MAX_LINE_LENGTH], Binary *bin, int type);
+CodeLine initCodeLine(size_t row, int address, char code[MAX_LINE_LENGTH], Binary *bin);
 
 DataLine initDataLine(int address, unsigned char value);
 
@@ -60,8 +59,10 @@ void updateSymbolTable(int ICF, LinkedList symbol_table);
 
 void updateDataImage(int ICF, LinkedList data_image);
 
-int add_symbol_to_symbol_table(char *symbol, LinkedList symbol_table, int value, char attr);
+int add_symbol_to_symbol_table(size_t row, char *symbol, LinkedList symbol_table, int value, char attr);
 
-int add_data(LinkedList data_image, int *address, int value, int type);
+void add_data(LinkedList data_image, int *address, int value, int type);
+
+int valid_symbol_add(size_t row, SymbolTableLine symbol_table_line, char attr);
 
 #endif

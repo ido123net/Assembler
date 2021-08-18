@@ -13,12 +13,14 @@
 #define NO_OF_ELEMENTS 3
 #define SPACES " \t\n"
 
+#include <errno.h>
+
 enum
 {
-    DB,
-    DH,
-    DW,
-    ASCIZ
+    ASCIZ,
+    DB = 1,
+    DH = 2,
+    DW = 4
 };
 
 enum

@@ -35,7 +35,7 @@ ExternalLine initExternalLine(char symbol[MAX_SYMBOL_LENGTH], int val)
     return external_line;
 }
 
-CodeLine initCodeLine(size_t row, int address, char code[MAX_LINE_LENGTH], Binary *bin, int type)
+CodeLine initCodeLine(size_t row, int address, char code[MAX_LINE_LENGTH], Binary *bin)
 {
     CodeLine code_line;
     code_line = malloc(sizeof(struct code_line));
@@ -130,7 +130,7 @@ void updateSymbolTable(int ICF, LinkedList symbol_table)
 
 void updateDataImage(int ICF, LinkedList data_image)
 {
-    CodeLine line;
+    DataLine line;
     Node node = data_image->head;
     while (node)
     {
@@ -140,27 +140,33 @@ void updateDataImage(int ICF, LinkedList data_image)
     }
 }
 
-int add_symbol_to_symbol_table(char *symbol, LinkedList symbol_table, int value, char attr)
+int add_symbol_to_symbol_table(size_t row, char *symbol, LinkedList symbol_table, int value, char attr)
 {
-    SymbolTableLine line;
-    if ((line = get_symbol_line(symbol_table, symbol)))
-    {
-        /* TODO: error The symbol is already in the symbol table without "external" */
-        if (attr == EXTERNAL)
-            return find_attr(line, attr);
+    if (!(valid_symbol_add(row, get_symbol_line(symbol_table, symbol), attr)))
         return FALSE;
-    }
-    return add_last(symbol_table, initSymbolTableLine(symbol, value, attr));
+    
+    add_last(symbol_table, initSymbolTableLine(symbol, value, attr));
+    return TRUE;
 }
 
-int add_data(LinkedList data_image, int *address, int value, int type)
+void add_data(LinkedList data_image, int *address, int value, int type)
 {
     int i;
     for (i = 0; i < type; i++)
     {
-        if(!add_last(data_image, initDataLine(*address, (value >> (8 * i++) & 0xFF))))
-            return FALSE;
+        add_last(data_image, initDataLine(*address, (value >> (8 * i))));
         (*address)++;
+    }
+}
+
+int valid_symbol_add(size_t row, SymbolTableLine symbol_table_line, char attr)
+{
+    if (symbol_table_line)
+    {
+        if (attr == EXTERNAL)
+            if(!find_attr(symbol_table_line, attr))
+                return symbol_error(row, symbol_table_line->symbol, SYBMOL_NOT_EXTERNAL);
+        return symbol_error(row, symbol_table_line->symbol, SYMBOL_DECLARED);
     }
     return TRUE;
 }

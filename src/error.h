@@ -3,18 +3,18 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "util.h"
 
 enum symbol_errors
 {
     INVALID_SYMBOL = 1,
     SAVED_WORD,
     SYMBOL_TOO_LONG,
-    LABEL_DECLARED
-};
-
-enum directive_errors
-{
-    INVALID_DIRECTIVE = 1,
+    SYMBOL_DECLARED,
+    SYBMOL_NOT_EXTERNAL,
+    OOR, /* out of range */
+    INVALID_STR,
+    INVALID_DIRECTIVE,
     NOT_REG,
     NAN, /* not a number */
     INVALID_IMMED,
@@ -23,16 +23,20 @@ enum directive_errors
     MISSING_OPERAND
 };
 
-void line_error(size_t row, int error);
+int line_error(size_t row, int error);
 
-void symbol_error(size_t row, char *symbol, int error);
+int symbol_error(size_t row, char *symbol, int error);
 
 void label_warning(size_t row);
 
 char *symbolstrerror(int error);
 
-void directive_error(size_t row, char *directive, int error);
+int directive_error(size_t row, char *directive, int error);
 
 char *directivestrerror(int error);
+
+int data_error(size_t row, char *data, int error);
+
+char *datastrerror(int error);
 
 #endif

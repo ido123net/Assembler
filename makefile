@@ -39,7 +39,7 @@ default: all
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ)
 
-$(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
+$(OBJ_PATH)/%.o: $(SRC_PATH)/%.c* $(SRC_PATH)/util.h
 	$(CC) $(OBJFLAGS) -o $@ $<
 
 .PHONY: all

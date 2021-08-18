@@ -164,12 +164,12 @@ int comment_line(char *tok)
 int is_symbol(char *s)
 {
     if (!s || strlen(s) == 0)
-        return -1;
+        return FALSE;
     if (isalpha(*s))
         s++;
     while (isalnum(*s))
         s++;
-    return (*s) ? INVALID_SYMBOL : 0;
+    return !(*s);
 }
 
 int is_label(char *s)
@@ -180,7 +180,7 @@ int is_label(char *s)
         return FALSE;
     strncpy(label, s, len - 1);
     label[len - 1] = '\0';
-    return is_symbol(label) == 0;
+    return is_symbol(label);
 }
 
 char *get_symbol(char *symbol, char *s)
@@ -222,27 +222,30 @@ int is_data(char *s)
     return FALSE;
 }
 
-int valid_symbol(char *symbol)
+int valid_symbol(size_t row, char *symbol)
 {
     int i;
 
+    if (!is_symbol(symbol))
+        return symbol_error(row, symbol, INVALID_SYMBOL);
+
     for (i = 0; i < LENGTH(R_type_instructions); i++)
         if (strcmp(R_type_instructions[i], symbol) == 0)
-            return SAVED_WORD;
+            return symbol_error(row, symbol, SAVED_WORD);
     for (i = 0; i < LENGTH(I_type_instructions); i++)
         if (strcmp(I_type_instructions[i], symbol) == 0)
-            return SAVED_WORD;
+            return symbol_error(row, symbol, SAVED_WORD);
     for (i = 0; i < LENGTH(J_type_instructions); i++)
         if (strcmp(J_type_instructions[i], symbol) == 0)
-            return SAVED_WORD;
+            return symbol_error(row, symbol, SAVED_WORD);
     for (i = 0; i < LENGTH(data_types); i++)
         if (strcmp(data_types[i], symbol) == 0)
-            return SAVED_WORD;
+            return symbol_error(row, symbol, SAVED_WORD);
 
     if (strlen(symbol) >= MAX_SYMBOL_LENGTH)
-        return SYMBOL_TOO_LONG;
+        return symbol_error(row, symbol, SYMBOL_TOO_LONG);
 
-    return 0;
+    return TRUE;
 }
 
 int get_directive_type(char *s, Binary *binary)
@@ -282,12 +285,17 @@ int get_directive_type(char *s, Binary *binary)
 
 int get_data_type(char *tok)
 {
-    int data_type;
     tok = str_strip(tok);
     tok++; /* data instructions start with '.' */
-    for (data_type = 0; data_type < LENGTH(data_types); data_type++)
-        if (strcmp(data_types[data_type], tok) == 0)
-            return data_type;
+
+    if (strcmp("db", tok) == 0)
+        return DB;
+    if (strcmp("dh", tok) == 0)
+        return DH;
+    if (strcmp("dw", tok) == 0)
+        return DW;
+    if (strcmp("asciz", tok) == 0)
+        return ASCIZ;
 
     return -1;
 }
@@ -312,21 +320,23 @@ int valid_num(char *s)
     return !(*s);
 }
 
-int valid_data(char *s, int data_type)
+int valid_data(size_t row, char *s, int data_type)
 {
     long num;
     char str_num[MAX_LINE_LENGTH], *tok;
 
     if (data_type == ASCIZ)
     {
-        return valid_str(s);
+        if (!valid_str(s))
+            return data_error(row, s, INVALID_STR);
     }
+
     strcpy(str_num, s);
     tok = strtok(str_num, ",");
     while (tok)
     {
         if (!valid_num(tok))
-            return FALSE;
+            return data_error(row, s, NAN);
         num = atoi(tok);
         switch (data_type)
         {
@@ -341,14 +351,16 @@ int valid_data(char *s, int data_type)
         case DW:
             if (num >= +INT_MIN && num <= +INT_MAX)
                 break;
-            return FALSE;
+            
+        default:
+            return data_error(row, tok, OOR);
         }
         tok = strtok(NULL, ",");
     }
     return TRUE;
 }
 
-int analyzeoperands(char *directive, char *operands, Binary *binary)
+int analyzeoperands(size_t row, char *directive, char *operands, Binary *binary)
 {
     int _reg, _immed;
     char *label;
@@ -357,7 +369,7 @@ int analyzeoperands(char *directive, char *operands, Binary *binary)
     int type;
 
     if ((type = get_directive_type(directive, binary)) == -1)
-        return INVALID_DIRECTIVE;
+        return directive_error(row, directive, INVALID_DIRECTIVE);
 
     switch (type)
     {
@@ -366,17 +378,17 @@ int analyzeoperands(char *directive, char *operands, Binary *binary)
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Rbinary.rs = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         tok = strtok(NULL, ",");
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Rbinary.rt = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         tok = strtok(NULL, SPACES);
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Rbinary.rd = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         break;
 
     case MOVE: /* work as well for MVHI, and MVLO */
@@ -384,12 +396,12 @@ int analyzeoperands(char *directive, char *operands, Binary *binary)
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Rbinary.rs = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         tok = strtok(NULL, SPACES);
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Rbinary.rd = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         break;
 
     case ADDI:
@@ -401,20 +413,20 @@ int analyzeoperands(char *directive, char *operands, Binary *binary)
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Ibinary.rs = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         tok = strtok(NULL, ",");
         if (!isnumber(tok))
-            return NAN;
+            return directive_error(row, directive, NAN);
         _immed = atoi(tok);
         if (valid_immed(_immed))
             binary->Ibinary.immed = _immed;
         else
-            return INVALID_IMMED;
+            return directive_error(row, directive, INVALID_IMMED);
         tok = strtok(NULL, SPACES);
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Ibinary.rt = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         break;
 
     case BEQ:
@@ -425,15 +437,15 @@ int analyzeoperands(char *directive, char *operands, Binary *binary)
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Ibinary.rs = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         tok = strtok(NULL, ",");
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Ibinary.rt = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         tok = strtok(NULL, SPACES);
         if ((label = str_to_symbol(tok)) == NULL)
-            return INVALID_LABEL;
+            return directive_error(row, directive, INVALID_LABEL);
         break;
 
     case LB:
@@ -446,20 +458,20 @@ int analyzeoperands(char *directive, char *operands, Binary *binary)
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Ibinary.rs = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         tok = strtok(NULL, ",");
         if (!isnumber(tok))
-            return NAN;
+            return directive_error(row, directive, NAN);
         _immed = atoi(tok);
         if (valid_immed(_immed))
             binary->Ibinary.immed = _immed;
         else
-            return INVALID_IMMED;
+            return directive_error(row, directive, INVALID_LABEL);
         tok = strtok(NULL, SPACES);
         if ((_reg = str_to_reg(tok)) >= 0)
             binary->Ibinary.rt = _reg;
         else
-            return NOT_REG;
+            return directive_error(row, directive, NOT_REG);
         break;
 
     case JMP:
@@ -472,13 +484,13 @@ int analyzeoperands(char *directive, char *operands, Binary *binary)
             if ((_reg = str_to_reg(tok)) >= 0)
                 binary->Jbinary.address = _reg;
             else
-                return NOT_REG;
+                return directive_error(row, directive, NOT_REG);
             break;
 
         default:
             binary->Jbinary.reg = FALSE;
             if ((label = str_to_symbol(tok)) == NULL)
-                return INVALID_LABEL;
+                return directive_error(row, directive, INVALID_LABEL);
             break;
         }
         break;
@@ -488,18 +500,18 @@ int analyzeoperands(char *directive, char *operands, Binary *binary)
         tok = strtok(operands, SPACES);
         tok = str_strip(tok);
         if ((label = str_to_symbol(tok)) == NULL)
-            return INVALID_LABEL;
+            return directive_error(row, directive, INVALID_LABEL);
         break;
 
     case STOP:
         if (operands)
-            return EXTRANEOUS_OPERAND;
+            return directive_error(row, directive, EXTRANEOUS_OPERAND);
         break;
     }
     if (strtok(NULL, SPACES) != NULL)
-        return EXTRANEOUS_OPERAND;
+        return directive_error(row, directive, EXTRANEOUS_OPERAND);
 
-    return 0;
+    return TRUE;
 }
 
 char **devide_line(char line[MAX_LINE_LENGTH], char *devided_line[NO_OF_ELEMENTS], const char *delim)

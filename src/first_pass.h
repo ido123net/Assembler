@@ -8,7 +8,6 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <limits.h>
-#include <errno.h>
 #include "data_structure.h"
 #include "binary.h"
 #include "error.h"
@@ -28,7 +27,7 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
                int *ICF,
                int *DCF);
 
-int getdata(size_t row,
+void getdata(size_t row,
             char *s,
             int data_type,
             LinkedList data_image,

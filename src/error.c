@@ -1,18 +1,27 @@
 #include "error.h"
 
-void line_error(size_t row, int error)
+int line_error(size_t row, int error)
 {
     fprintf(stderr, "ERROR: (Line %d) %s\n", row, symbolstrerror(error));
+    return FALSE;
 }
 
-void symbol_error(size_t row, char *symbol, int error)
+int symbol_error(size_t row, char *symbol, int error)
 {
     fprintf(stderr, "ERROR: (Line %d) The Symbol - \"%s\" is %s\n", row, symbol, symbolstrerror(error));
+    return FALSE;
 }
 
-void directive_error(size_t row, char *directive, int error)
+int directive_error(size_t row, char *directive, int error)
 {
     fprintf(stderr, "ERROR: (Line %d) The directive - \"%s\" %s\n", row, directive, directivestrerror(error));
+    return FALSE;
+}
+
+int data_error(size_t row, char *data, int error)
+{
+    fprintf(stderr, "ERROR: (Line %d) The data - \"%s\" %s\n", row, data, datastrerror(error));
+    return FALSE;
 }
 
 void label_warning(size_t row)
@@ -32,9 +41,12 @@ char *symbolstrerror(int error)
 
     case SYMBOL_TOO_LONG:
         return "too long";
-    
-    case LABEL_DECLARED:
+
+    case SYMBOL_DECLARED:
         return "already been declared";
+
+    case SYBMOL_NOT_EXTERNAL:
+        return "already been declared as not external";
 
     default:
         return "";
@@ -53,6 +65,37 @@ char *directivestrerror(int error)
 
     case MISSING_OPERAND:
         return "has missing operand";
+
+    case NAN:
+        return "contain invalid number argumennt";
+
+    case INVALID_SYMBOL:
+        return "contain invalid label argumennt";
+
+    case NOT_REG:
+        return "contain invalid register argumennt";
+
+    case INVALID_IMMED:
+        return "contain invalid immed argumennt";
+
+    
+    default:
+        return "";
+    }
+}
+
+char *datastrerror(int error)
+{
+    switch (error)
+    {
+    case INVALID_STR:
+        return "is invalid string";
+
+    case NAN:
+        return "is not a number";
+
+    case OOR:
+        return "is out of range";
 
     default:
         return "";

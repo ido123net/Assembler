@@ -12,11 +12,11 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
     FILE *file;
     char line[MAX_LINE_LENGTH], tmp[MAX_LINE_LENGTH];
     char label[MAX_SYMBOL_LENGTH], symbol[MAX_SYMBOL_LENGTH];
-    int labelflag = FALSE;
+    int labelflag = FALSE, error_flag = FALSE;
     int data_type;
     int IC = START_ADDRESS;
     int DC = 0;
-    size_t row_num = 0;
+    size_t row = 0;
     Binary *binary;
     int arg;
 
@@ -30,14 +30,13 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
 
     while (read_line(line, MAX_LINE_LENGTH + 1, file) != NULL)
     {
-        row_num++;
+        row++;
         arg = 0;
         strcpy(tmp, line);
         str_strip(tmp);
-        devided_line[arg] = strtok(tmp, SPACES);
-
         labelflag = FALSE;
-        binary = init_Binary();
+
+        devided_line[arg] = strtok(tmp, SPACES);
 
         if (blank_line(devided_line[arg]) || comment_line(devided_line[arg])) /* if line is blank or comment, ignore it */
             continue;
@@ -48,93 +47,71 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
             devided_line[++arg] = strtok(NULL, SPACES);
         }
 
+        devided_line[(arg + 1)] = strtok(NULL, "\0");
+
         if (is_data(devided_line[arg])) /* Check if this is data instructions */
         {
             if (labelflag)
             {
                 get_label(label, devided_line[0]); /* first argument in line is the label */
-                if (errno = valid_symbol(label))
+                if (!valid_symbol(row, label) ||
+                    !add_symbol_to_symbol_table(row, label, symbol_table, DC, DATA))
                 {
-                    symbol_error(row_num, label, errno);
+                    error_flag = TRUE;
                     continue;
                 }
-                add_symbol_to_symbol_table(label, symbol_table, DC, DATA);
             }
 
-            data_type = get_data_type(devided_line[arg]);
-            devided_line[++arg] = strtok(NULL, "\0");
-            if (!valid_data(devided_line[arg], data_type))
-            {
-                /* TODO: error */
-                continue;
-            }
-            if (!getdata(row_num, devided_line[arg], data_type, data_image, &DC))
-            {
-                fprintf(stderr, "Error malloc file: %s\n", strerror(errno));
-                return FALSE;
-            }
+            data_type = get_data_type(devided_line[arg++]);
+            if (!valid_data(row, devided_line[arg], data_type))
+                error_flag = TRUE;
+            getdata(row, devided_line[arg], data_type, data_image, &DC);
             continue;
         }
 
         if (entry_line(devided_line[arg]))
         {
-            if (!add_last(code_image, initCodeLine(row_num, 0, line, binary, 0)))
-                return FALSE;
+            if (labelflag)
+                label_warning(row);
+
+            add_last(code_image, initCodeLine(row, 0, line, init_Binary()));
             continue;
         }
 
         if (extern_line(devided_line[arg]))
         {
             if (labelflag)
-                label_warning(row_num);
+                label_warning(row);
 
-            devided_line[++arg] = strtok(NULL, "\0");
-            get_symbol(symbol, devided_line[arg]);
-            if (!(errno = is_symbol(symbol)) && !(errno = valid_symbol(symbol)))
-                add_symbol_to_symbol_table(symbol, symbol_table, 0, EXTERNAL);
-            else
-                symbol_error(row_num, symbol, errno);
+            get_symbol(symbol, devided_line[++arg]);
+            if (!valid_symbol(row, symbol) ||
+                !add_symbol_to_symbol_table(row, symbol, symbol_table, 0, EXTERNAL))
+                error_flag = TRUE;
+
             continue;
         }
 
         if (labelflag)
         {
             get_label(label, devided_line[0]);
-            if (errno = valid_symbol(label))
+            if (!valid_symbol(row, label) ||
+                !add_symbol_to_symbol_table(row, label, symbol_table, IC, CODE))
             {
-                symbol_error(row_num, label, errno);
+                error_flag = TRUE;
                 continue;
             }
-
-            if (get_symbol_line(symbol_table, label) != NULL)
-            {
-                symbol_error(row_num, label, LABEL_DECLARED);
-                continue;
-            }
-
-            add_symbol_to_symbol_table(label, symbol_table, IC, CODE);
         }
 
-        devided_line[++arg] = strtok(NULL, "\0");
+        binary = init_Binary();
 
-        if (analyzeoperands(devided_line[(arg - 1)], devided_line[arg], binary) == 0)
+        if (!analyzeoperands(row, devided_line[arg], devided_line[(arg + 1)], binary))
         {
-            /* TODO: Build a binary encoding for the instruction */
-            /**
-             * In part as much as possible.
-             * Add the encoding to the memory image of The instructions.
-             * Add the current value of the IC as the memory address of the instruction Added.
-             */
-            /* TODO: add binary to instruction image */
-            if (!add_last(code_image, initCodeLine(row_num, IC, line, binary, FOUR_BYTES)))
-                return FALSE;
-
-            IC += 4;
+            error_flag = TRUE;
+            continue;
         }
+        add_last(code_image, initCodeLine(row, IC, line, binary));
+        IC += 4;
     }
-
-    if (errno)
-        return FALSE;
 
     *ICF = IC;
     *DCF = DC;
@@ -142,10 +119,10 @@ int first_pass(const char filename[MAX_LINE_LENGTH],
     updateSymbolTable(*ICF, symbol_table);
     updateDataImage(*ICF, data_image);
 
-    return TRUE;
+    return !error_flag;
 }
 
-int getdata(size_t row, char *s, int data_type, LinkedList data_image, int *DC)
+void getdata(size_t row, char *s, int data_type, LinkedList data_image, int *DC)
 {
     char *tok, tmp[MAX_LINE_LENGTH];
     int value;
@@ -156,14 +133,10 @@ int getdata(size_t row, char *s, int data_type, LinkedList data_image, int *DC)
         s++;
         while (*s != '"')
         {
-            if (!add_last(data_image, initDataLine(*DC, *s)))
-                return FALSE;
+            add_last(data_image, initDataLine((*DC)++, *s));
             s++;
         }
-        if (!add_last(data_image, initDataLine(*DC, '\0')))
-            return FALSE;
-        *DC += 4;
-        return TRUE;
+        add_last(data_image, initDataLine((*DC)++, '\0'));
     }
 
     strcpy(tmp, s);
@@ -175,5 +148,4 @@ int getdata(size_t row, char *s, int data_type, LinkedList data_image, int *DC)
         add_data(data_image, DC, value, data_type);
         tok = strtok(NULL, ",");
     }
-    return TRUE;
 }

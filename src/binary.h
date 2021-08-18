@@ -8,8 +8,6 @@
 
 typedef union code_binary
 {
-    unsigned char one_byte;
-    unsigned short two_bytes;
     unsigned int value;
 
     struct
@@ -38,13 +36,6 @@ typedef union code_binary
     } Jbinary;
 
 } Binary;
-
-enum
-{
-    ONE_BYTE = 1,
-    TWO_BYTES = 2,
-    FOUR_BYTES = 4
-};
 
 Binary *init_Binary();
 

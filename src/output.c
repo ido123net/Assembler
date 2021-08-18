@@ -52,9 +52,11 @@ int output_object(char filename[MAX_LINE_LENGTH],
     {
         data_line = node->data;
         fprintf(fp, "%.4d", data_line->address);
-        for (i = 0; node && (i < 4); i++, node = node->next)
+        for (i = 0; node && (i < 4); i++)
         {
+            data_line = node->data;
             fprintf(fp, " %.2X", data_line->value);
+            node = node->next;
         }
         putc('\n', fp);
     }

@@ -24,12 +24,15 @@ Node init_node(void *element)
     return node;
 }
 
-int add_last(LinkedList linked_list, void *element)
+void add_last(LinkedList linked_list, void *element)
 {
     Node node = init_node(element);
 
-    if (!node || !linked_list)
-        return FALSE;
+    if (!node)
+    {
+        fprintf(stderr, "Error malloc node: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
 
     if (linked_list->tail != NULL)
     {
@@ -43,8 +46,6 @@ int add_last(LinkedList linked_list, void *element)
         linked_list->head = node;
         linked_list->tail = node;
     }
-
-    return TRUE;
 }
 
 void free_list(LinkedList linked_list)
