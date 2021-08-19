@@ -1,9 +1,8 @@
 #include "error.h"
 
-int line_error(size_t row, int error)
+void file_error(const char *file)
 {
-    fprintf(stderr, "ERROR: (Line %d) %s\n", row, symbolstrerror(error));
-    return FALSE;
+    fprintf(stderr, "the file %s is invalid\n", file);
 }
 
 int symbol_error(size_t row, char *symbol, int error)
@@ -50,7 +49,7 @@ char *symbolstrerror(int error)
     case SYMBOL_DECLARED:
         return "already been declared";
 
-    case SYBMOL_NOT_EXTERNAL:
+    case SYMBOL_NOT_EXTERNAL:
         return "already been declared as not external";
 
     case MISSING_SYMBOL:
@@ -60,7 +59,7 @@ char *symbolstrerror(int error)
         return "external symbol";
 
     case INVALID_DIST:
-        return "invalid distanse";
+        return "invalid distance";
 
     default:
         return "";
@@ -75,22 +74,22 @@ char *directivestrerror(int error)
         return "is invalid";
 
     case EXTRANEOUS_OPERAND:
-        return "has extraneous oprand";
+        return "has extraneous operand";
 
     case MISSING_OPERAND:
         return "has missing operand";
 
     case NAN:
-        return "contain invalid number argumennt";
+        return "contain invalid number argument";
 
     case INVALID_SYMBOL:
-        return "contain invalid label argumennt";
+        return "contain invalid label argument";
 
     case NOT_REG:
-        return "contain invalid register argumennt";
+        return "contain invalid register argument";
 
     case INVALID_IMMED:
-        return "contain invalid immed argumennt";
+        return "contain invalid immed argument";
 
     
     default:

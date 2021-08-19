@@ -37,10 +37,10 @@ default: all
 
 # non-phony targets
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -o $@
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c* $(SRC_PATH)/util.h
-	$(CC) $(OBJFLAGS) -o $@ $<
+	$(CC) $(OBJFLAGS) $< -o $@
 
 .PHONY: all
 all: $(TARGET)

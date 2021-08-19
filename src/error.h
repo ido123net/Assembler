@@ -11,7 +11,7 @@ enum symbol_errors
     SAVED_WORD,
     SYMBOL_TOO_LONG,
     SYMBOL_DECLARED,
-    SYBMOL_NOT_EXTERNAL,
+    SYMBOL_NOT_EXTERNAL,
     OOR, /* out of range */
     INVALID_STR,
     INVALID_DIRECTIVE,
@@ -26,22 +26,79 @@ enum symbol_errors
     INVALID_DIST
 };
 
-int line_error(size_t row, int error);
+/**
+ * @brief file error
+ * 
+ * @param file the file
+ */
+void file_error(const char *file);
 
+/**
+ * @brief symbol error
+ * 
+ * @param row the row of the error
+ * @param symbol the symbol
+ * @param error the error number
+ * @return FALSE 
+ */
 int symbol_error(size_t row, char *symbol, int error);
 
+/**
+ * @brief label warning, in entrey or extern lines.
+ * 
+ * @param row the row of the warning
+ */
 void label_warning(size_t row);
 
+/**
+ * @brief long line warning, if line is more then the allowed chars.
+ * 
+ * @param row the row of thw warning
+ */
 void long_line_warning(size_t row);
 
+/**
+ * @brief convert error num to string
+ * 
+ * @param error the error num
+ * @return string represent the error
+ */
 char *symbolstrerror(int error);
 
+/**
+ * @brief directive error
+ * 
+ * @param row the row of the error
+ * @param directive the directive
+ * @param error the error number
+ * @return FALSE 
+ */
 int directive_error(size_t row, char *directive, int error);
 
+/**
+ * @brief convert error num to string
+ * 
+ * @param error the error num
+ * @return string represent the error
+ */
 char *directivestrerror(int error);
 
+/**
+ * @brief data error
+ * 
+ * @param row the row of the error
+ * @param data the data
+ * @param error the error number
+ * @return FALSE 
+ */
 int data_error(size_t row, char *data, int error);
 
+/**
+ * @brief convert error num to string
+ * 
+ * @param error the error num
+ * @return string represent the error
+ */
 char *datastrerror(int error);
 
 #endif

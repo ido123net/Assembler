@@ -56,18 +56,19 @@ void add_last(LinkedList linked_list, void *element)
     }
 }
 
-void free_list(LinkedList linked_list)
+void free_list(LinkedList linked_list, void (*node_data_free)(void *data))
 {
+    Node node_ptr, tmp;
     if (linked_list)
     {
-        Node node_ptr = linked_list->head;
+        node_ptr = linked_list->head;
         while (node_ptr)
         {
-            Node tmp = node_ptr;
+            tmp = node_ptr;
             node_ptr = node_ptr->next;
             tmp->previous = NULL;
             tmp->next = NULL;
-            free(tmp->data);
+            node_data_free(tmp->data);
             free(tmp);
         }
         linked_list->head = NULL;

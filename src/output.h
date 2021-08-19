@@ -13,15 +13,37 @@ int output_files(char filename[MAX_LINE_LENGTH],
                  LinkedList external_lines,
                  int ICF, int DCF);
 
+/**
+ * @brief output .ob file
+ * 
+ * @param filename base file name
+ * @param code_image the code image
+ * @param data_image the data image
+ * @param ICF instraction counter total
+ * @param DCF data counter total
+ * @return TRUE on success.
+ */
 int output_object(char filename[MAX_LINE_LENGTH],
                   LinkedList code_image,
                   LinkedList data_image,
                   int ICF, int DCF);
 
+/**
+ * @brief output .ent file
+ * 
+ * @param filename base file name
+ * @param symbol_table the symbol table
+ * @return TRUE on success.
+ */
 int output_entries(char filename[MAX_LINE_LENGTH], LinkedList symbol_table);
 
+/**
+ * @brief output .ext file
+ * 
+ * @param filename base file name
+ * @param external_lines the external lines
+ * @return TRUE on success.
+ */
 int output_externals(char filename[MAX_LINE_LENGTH], LinkedList external_lines);
-
-void print_next_data_bin(FILE *fp, CodeLine line, int *i);
 
 #endif

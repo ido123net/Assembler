@@ -15,7 +15,7 @@
 
 #include <errno.h>
 
-enum
+enum data_types
 {
     ASCIZ,
     DB = 1,
