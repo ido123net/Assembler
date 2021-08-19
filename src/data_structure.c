@@ -166,10 +166,14 @@ int valid_symbol_add(size_t row, SymbolTableLine symbol_table_line, char attr)
 {
     if (symbol_table_line)
     {
-        if (attr == EXTERNAL)
-            if(!find_attr(symbol_table_line, attr))
-                return symbol_error(row, symbol_table_line->symbol, SYBMOL_NOT_EXTERNAL);
-        return symbol_error(row, symbol_table_line->symbol, SYMBOL_DECLARED);
+        return FALSE;
     }
     return TRUE;
+}
+
+void free_code_line(void *line)
+{
+    CodeLine code_line = line;
+    free(code_line->binary);
+    free(line);
 }

@@ -1,12 +1,9 @@
 #include "second_pass.h"
 #include "parser.h"
 
-int second_pass(LinkedList code_image,
-                LinkedList symbol_table,
-                LinkedList external_lines,
-                int *ICF, int *DCF)
+int second_pass(LinkedList code_image, LinkedList symbol_table, LinkedList external_lines)
 {
-    char *devided_line[NO_OF_ELEMENTS];
+    char *divided_line[NO_OF_ELEMENTS];
     char tmp[MAX_LINE_LENGTH];
     Node node;
     CodeLine line;
@@ -24,16 +21,16 @@ int second_pass(LinkedList code_image,
         arg = 0;
         strcpy(tmp, line->code);
 
-        devided_line[arg] = strtok(tmp, SPACES);
+        divided_line[arg] = strtok(tmp, SPACES);
 
-        if (is_label(devided_line[arg])) /* if the first word of the line is label */
-            devided_line[++arg] = strtok(NULL, SPACES);
+        if (is_label(divided_line[arg])) /* if the first word of the line is label */
+            divided_line[++arg] = strtok(NULL, SPACES);
 
-        devided_line[(arg + 1)] = strtok(NULL, "\0");
+        divided_line[(arg + 1)] = strtok(NULL, "\0");
 
-        if (entry_line(devided_line[arg]))
+        if (entry_line(divided_line[arg]))
         {
-            get_symbol(symbol, devided_line[(arg + 1)]);
+            get_symbol(symbol, divided_line[(arg + 1)]);
             if (!addAttr(get_symbol_line(symbol_table, symbol), ENTRY))
             {
                 symbol_error(line->row, symbol, MISSING_SYMBOL);
@@ -49,7 +46,7 @@ int second_pass(LinkedList code_image,
         case BNE:
         case BLT:
         case BGT:
-            strtok(devided_line[(arg + 1)], ",");
+            strtok(divided_line[(arg + 1)], ",");
             strtok(NULL, ",");
             get_symbol(symbol, strtok(NULL, "\0"));
             if (!(symbol_table_line = get_symbol_line(symbol_table, symbol)))
@@ -74,7 +71,7 @@ int second_pass(LinkedList code_image,
         case JMP:
         case LA:
         case CALL:
-            get_symbol(symbol, devided_line[(arg + 1)]);
+            get_symbol(symbol, divided_line[(arg + 1)]);
             if (str_to_reg(symbol) >= 0)
                 break;
             if (!(symbol_table_line = get_symbol_line(symbol_table, symbol)))

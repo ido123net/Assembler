@@ -366,7 +366,7 @@ int valid_data(size_t row, char *s, int data_type)
     return TRUE;
 }
 
-int analyzeoperands(size_t row, char *directive, char *operands, Binary *binary)
+int analyze_operands(size_t row, char *directive, char *operands, Binary *binary)
 {
     int _reg, _immed;
     char *label;
@@ -518,23 +518,6 @@ int analyzeoperands(size_t row, char *directive, char *operands, Binary *binary)
         return directive_error(row, directive, EXTRANEOUS_OPERAND);
 
     return TRUE;
-}
-
-char **devide_line(char line[MAX_LINE_LENGTH], char *devided_line[NO_OF_ELEMENTS], const char *delim)
-{
-    char *tmp = my_strdup(line);
-    devided_line[0] = strtok(tmp, delim);
-    if (is_label(devided_line[0]))
-    {
-        devided_line[1] = strtok(NULL, delim);
-        devided_line[2] = strtok(NULL, "\0");
-    }
-    else
-    {
-        devided_line[1] = strtok(NULL, "\0");
-        devided_line[2] = NULL;
-    }
-    return devided_line;
 }
 
 int valid_filename(const char *filename)

@@ -1,9 +1,6 @@
 #ifndef BINARY_H
 #define BINARY_H
 
-#define IMMED_MASK 0xffff
-#define ADDRESS_MASK 0xffffff
-
 #include <stdlib.h>
 
 typedef union code_binary
@@ -37,6 +34,7 @@ typedef union code_binary
 
 } Binary;
 
+/* Initializing Binary number, should be free at the end */
 Binary *init_Binary();
 
 #endif
